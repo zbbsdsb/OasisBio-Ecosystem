@@ -1,0 +1,22 @@
+export const AUTH_ROUTES = {
+  LOGIN: '/auth/login',
+  REGISTER: '/auth/register',
+  CALLBACK: '/auth/callback',
+  LOGOUT: '/auth/logout'
+} as const;
+
+export const OTP_ERROR_CODES = {
+  OTP_EXPIRED: 'OTP_EXPIRED',
+  OTP_INVALID: 'OTP_INVALID',
+  OTP_RATE_LIMITED: 'OTP_RATE_LIMITED',
+  EMAIL_NOT_FOUND: 'EMAIL_NOT_FOUND',
+  INVALID_EMAIL: 'INVALID_EMAIL'
+} as const;
+
+export const AUTH_ERROR_CODES = {
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  FORBIDDEN: 'FORBIDDEN',
+  NOT_FOUND: 'NOT_FOUND',
+  SESSION_EXPIRED: 'SESSION_EXPIRED',
+  TOKEN_INVALID: 'TOKEN_INVALID'
+} as const;

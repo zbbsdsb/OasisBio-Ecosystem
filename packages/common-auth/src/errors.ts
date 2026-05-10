@@ -21,3 +21,8 @@ export class OtpError extends Error {
     message: string,
     code: string = 'OTP_INVALID'
   ) {
+    super(message);
+    this.name = 'OtpError';
+    this.code = code;
+  }
+}
