@@ -1,0 +1,19 @@
+{
+  "name": "oasisbio-ecosystem",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OasisBio Ecosystem - Monorepo",
+  "scripts": {
+    "build": "pnpm -r build",
+    "dev": "pnpm -r dev",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "keywords": ["oasisbio", "character", "ecosystem"],
+  "author": "OasisBio Team",
+  "license": "MIT",
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
