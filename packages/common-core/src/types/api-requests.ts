@@ -106,4 +106,86 @@ export interface UpdateEraRequest {
 }
 
 export interface CreateWorldRequest {
-  name:
+  name: string;
+  summary: string;
+  timeSetting?: string;
+  geography?: string;
+  physicsRules?: string;
+  socialStructure?: string;
+  aestheticKeywords?: string;
+  majorConflict?: string;
+  timeline?: string;
+  rules?: string;
+  factions?: string;
+  genre?: string;
+  tone?: string;
+}
+
+export interface UpdateWorldRequest {
+  name?: string;
+  summary?: string;
+  timeSetting?: string;
+  geography?: string;
+  physicsRules?: string;
+  socialStructure?: string;
+  aestheticKeywords?: string;
+  majorConflict?: string;
+  timeline?: string;
+  rules?: string;
+  factions?: string;
+  genre?: string;
+  tone?: string;
+}
+
+export interface CreateWorldDocumentRequest {
+  title: string;
+  content: string;
+  docType: string;
+  slug?: string;
+  folderPath?: string;
+  sortOrder?: number;
+}
+
+export interface UpdateWorldDocumentRequest {
+  title?: string;
+  content?: string;
+  docType?: string;
+  slug?: string;
+  folderPath?: string;
+  sortOrder?: number;
+}
+
+export interface UpdateProfileRequest {
+  username?: string;
+  displayName?: string;
+  avatarUrl?: string;
+  bio?: string;
+  website?: string;
+  locale?: string;
+  defaultLanguage?: string;
+}
+
+export interface UpdateSettingsRequest {
+  section: 'account' | 'profile' | 'security';
+  data: any;
+}
+
+export interface PublishBioRequest {
+  visibility?: string;
+  requestId?: string;
+}
+
+export interface LoginWithOtpRequest {
+  email: string;
+}
+
+export interface VerifyOtpRequest {
+  email: string;
+  token: string;
+  type: 'email' | 'sms';
+}
+
+export interface RegisterRequest {
+  email: string;
+  displayName: string;
+}
