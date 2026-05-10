@@ -1,0 +1,77 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Theme.OasisBio" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryVariant">@color/primary_variant</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryVariant">@color/secondary_variant</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+        <item name="colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/on_background</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/on_error</item>
+        
+        <item name="textAppearanceHeadlineLarge">@style/TextAppearance.OasisBio.HeadlineLarge</item>
+        <item name="textAppearanceHeadlineMedium">@style/TextAppearance.OasisBio.HeadlineMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.OasisBio.HeadlineSmall</item>
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.OasisBio.TitleLarge</item>
+        <item name="textAppearanceTitleMedium">@style/TextAppearance.OasisBio.TitleMedium</item>
+        <item name="textAppearanceTitleSmall">@style/TextAppearance.OasisBio.TitleSmall</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.OasisBio.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.OasisBio.BodyMedium</item>
+        <item name="textAppearanceBodySmall">@style/TextAppearance.OasisBio.BodySmall</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.OasisBio.LabelLarge</item>
+        <item name="textAppearanceLabelMedium">@style/TextAppearance.OasisBio.LabelMedium</item>
+        <item name="textAppearanceLabelSmall">@style/TextAppearance.OasisBio.LabelSmall</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.HeadlineLarge" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.HeadlineMedium" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.TitleMedium" parent="TextAppearance.Material3.TitleMedium">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.TitleSmall" parent="TextAppearance.Material3.TitleSmall">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.BodySmall" parent="TextAppearance.Material3.BodySmall">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.LabelMedium" parent="TextAppearance.Material3.LabelMedium">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+
+    <style name="TextAppearance.OasisBio.LabelSmall" parent="TextAppearance.Material3.LabelSmall">
+        <item name="fontFamily">sans-serif</item>
+    </style>
+</resources>
