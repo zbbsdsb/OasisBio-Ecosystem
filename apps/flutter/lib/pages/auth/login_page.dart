@@ -130,4 +130,66 @@ class _LoginPageState extends State<LoginPage> {
                                   });
                                 },
                               ),
-                              border
+                              border: const OutlineInputBorder(),
+                            ),
+                            validator: Validatorless.multiple([
+                              Validatorless.required('Password is required'),
+                              Validatorless.min(
+                                  8, 'Password must be at least 8 characters'),
+                            ]),
+                          ),
+                          const SizedBox(height: 24),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: state.status == AuthStatus.loading
+                                  ? null
+                                  : _submit,
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                    vertical: 16),
+                                backgroundColor: const Color(0xFF4F46E5),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                              child: state.status == AuthStatus.loading
+                                  ? const CircularProgressIndicator(
+                                      color: Colors.white,
+                                    )
+                                  : Text(
+                                      _isLogin ? 'Sign In' : 'Sign Up',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 24),
+                TextButton(
+                  onPressed: () {
+                    setState(() {
+                      _isLogin = !_isLogin;
+                    });
+                  },
+                  child: Text(
+                    _isLogin
+                        ? 'Don\'t have an account? Sign Up'
+                        : 'Already have an account? Sign In',
+                    style: const TextStyle(color: Color(0xFF4F46E5)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
