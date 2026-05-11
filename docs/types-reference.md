@@ -555,4 +555,180 @@ interface ValidationRules {
     PATTERN: RegExp;         // /^[a-z0-9_]+$/i
   };
   EMAIL: {
-    PATTERN: Reg
+    PATTERN: RegExp;         // Standard email regex
+  };
+  PASSWORD: {
+    MIN_LENGTH: number;      // 8
+    MAX_LENGTH: number;      // 128
+  };
+  OTP_CODE: {
+    LENGTH: number;          // 6
+    PATTERN: RegExp;         // /^\d{6}$/
+  };
+  OASISBIO_TITLE: {
+    MIN_LENGTH: number;      // 3
+    MAX_LENGTH: number;      // 200
+  };
+  SLUG: {
+    PATTERN: RegExp;         // /^[a-z0-9-]+$/
+  };
+  FILE_SIZE: {
+    AVATAR: number;          // 2MB
+    CHARACTER_COVER: number; // 5MB
+    MODEL_PREVIEW: number;   // 3MB
+    MODEL: number;           // 100MB
+    EXPORT: number;          // 50MB
+  };
+}
+```
+
+---
+
+## API Endpoints
+
+### API_ENDPOINTS
+
+Centralized endpoint URLs.
+
+```typescript
+const API_ENDPOINTS = {
+  AUTH: {
+    REGISTER: '/api/auth/register',
+    LOGIN: '/api/auth/login',
+    VERIFY: '/api/auth/verify',
+    LOGOUT: '/api/auth/logout'
+  },
+  OASISBIOS: {
+    LIST: '/api/oasisbios',
+    DETAIL: (id: string) => `/api/oasisbios/${id}`,
+    PUBLISH: (id: string) => `/api/oasisbios/${id}/publish`,
+    PUBLIC: '/api/oasisbios/public'
+  },
+  ABILITIES: {
+    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/abilities`,
+    DETAIL: (id: string) => `/api/abilities/${id}`
+  },
+  WORLDS: {
+    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/worlds`,
+    DETAIL: (id: string) => `/api/worlds/${id}`,
+    DOCUMENTS: (worldId: string) => `/api/worlds/${worldId}/documents`
+  },
+  DCOS: {
+    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/dcos`,
+    DETAIL: (id: string) => `/api/dcos/${id}`
+  },
+  REFERENCES: {
+    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/references`,
+    DETAIL: (id: string) => `/api/references/${id}`
+  },
+  ERAS: {
+    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/eras`,
+    DETAIL: (id: string) => `/api/eras/${id}`
+  },
+  PROFILE: '/api/profile',
+  DASHBOARD: '/api/dashboard',
+  SETTINGS: '/api/settings'
+};
+```
+
+---
+
+## Storage Paths
+
+### STORAGE_PATHS
+
+File storage path templates.
+
+```typescript
+const STORAGE_PATHS = {
+  AVATARS: 'avatars/{userId}/{filename}',
+  CHARACTER_COVERS: 'character-covers/{oasisBioId}/{filename}',
+  MODEL_PREVIEWS: 'model-previews/{modelId}/{filename}',
+  MODELS: 'models/{oasisBioId}/{filename}',
+  EXPORTS: 'exports/{oasisBioId}/{filename}',
+  REFERENCES: 'references/{referenceId}/{filename}'
+};
+```
+
+---
+
+## Default Values
+
+### DEFAULT_VALUES
+
+Default values for various entities.
+
+```typescript
+const DEFAULT_VALUES = {
+  OASISBIO: {
+    STATUS: 'draft' as const,
+    VISIBILITY: 'private' as const,
+    IDENTITY_MODE: IdentityMode.FICTIONAL,
+    DEFAULT_LANGUAGE: 'zh-CN'
+  },
+  ABILITY: {
+    LEVEL: 1,
+    SOURCE_TYPE: 'custom' as const
+  },
+  WORLD: {
+    VISIBILITY: 'private' as const
+  },
+  DCOS_FILE: {
+    STATUS: 'draft' as const,
+    VERSION: 1
+  },
+  PAGINATION: {
+    PAGE: 1,
+    LIMIT: 20
+  }
+};
+```
+
+---
+
+## Error Classes
+
+### AuthError
+
+```typescript
+class AuthError extends Error {
+  constructor(
+    public code: string,
+    message: string,
+    public statusCode: number = 401
+  ) {
+    super(message);
+    this.name = 'AuthError';
+  }
+}
+```
+
+### OtpError
+
+```typescript
+class OtpError extends AuthError {
+  constructor(
+    code: string,
+    message: string,
+    public retryDelay?: number
+  ) {
+    super(code, message, 400);
+    this.name = 'OtpError';
+  }
+}
+```
+
+---
+
+## Export Summary
+
+### Package Exports
+
+| Package | Key Exports |
+|---------|-------------|
+| `@oasisbio/common-core` | Models, enums, constants, types |
+| `@oasisbio/common-utils` | Utility functions, Result type |
+| `@oasisbio/common-auth` | Auth types, error classes |
+| `@oasisbio/common-api` | API client, endpoints |
+| `@oasisbio/common-validators` | Validation functions |
+| `@oasisbio/common-services` | Business services |
