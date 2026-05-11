@@ -358,4 +358,245 @@ List worlds for an OasisBio.
 **Response:**
 ```json
 {
-  "data":
+  "data": [
+    {
+      "id": "string",
+      "name": "string",
+      "summary": "string",
+      "visibility": "private|public",
+      "timeSetting": "string",
+      "geography": "string",
+      "physicsRules": "string",
+      "socialStructure": "string",
+      "majorConflict": "string",
+      "timeline": "string",
+      "rules": "string",
+      "factions": "string"
+    }
+  ]
+}
+```
+
+### POST /api/oasisbios/{id}/worlds
+
+Create a new world.
+
+**Request Body:**
+```json
+{
+  "name": "string (required)",
+  "summary": "string (required)",
+  "timeSetting": "string",
+  "geography": "string",
+  "physicsRules": "string",
+  "socialStructure": "string",
+  "majorConflict": "string",
+  "timeline": "string",
+  "rules": "string",
+  "factions": "string",
+  "visibility": "private|public"
+}
+```
+
+### GET /api/worlds/{id}
+
+Get a world by ID.
+
+**Response:** Same as world object in list response.
+
+### PUT /api/worlds/{id}
+
+Update a world.
+
+### DELETE /api/worlds/{id}
+
+Delete a world.
+
+---
+
+## DCOS Endpoints
+
+### GET /api/oasisbios/{id}/dcos
+
+List DCOS files for an OasisBio.
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "string",
+      "title": "string",
+      "slug": "string",
+      "content": "string",
+      "folderPath": "string",
+      "status": "draft|published",
+      "version": 1
+    }
+  ]
+}
+```
+
+### POST /api/oasisbios/{id}/dcos
+
+Create a DCOS file.
+
+**Request Body:**
+```json
+{
+  "title": "string (required)",
+  "content": "string (required)",
+  "slug": "string",
+  "folderPath": "string",
+  "status": "draft|published",
+  "eraId": "string"
+}
+```
+
+### PUT /api/dcos/{id}
+
+Update a DCOS file.
+
+### DELETE /api/dcos/{id}
+
+Delete a DCOS file.
+
+---
+
+## Reference Endpoints
+
+### GET /api/oasisbios/{id}/references
+
+List references for an OasisBio.
+
+### POST /api/oasisbios/{id}/references
+
+Create a reference.
+
+**Request Body:**
+```json
+{
+  "url": "string (required)",
+  "title": "string (required)",
+  "description": "string",
+  "sourceType": "article|video|website",
+  "provider": "string",
+  "coverImage": "string",
+  "eraId": "string",
+  "worldId": "string",
+  "tags": "string"
+}
+```
+
+### PUT /api/references/{id}
+
+Update a reference.
+
+### DELETE /api/references/{id}
+
+Delete a reference.
+
+---
+
+## Era Endpoints
+
+### GET /api/oasisbios/{id}/eras
+
+List eras for an OasisBio.
+
+### POST /api/oasisbios/{id}/eras
+
+Create an era.
+
+**Request Body:**
+```json
+{
+  "name": "string (required)",
+  "eraType": "past|present|future|alternate|worldbound",
+  "description": "string",
+  "startYear": "number",
+  "endYear": "number"
+}
+```
+
+### PUT /api/eras/{id}
+
+Update an era.
+
+### DELETE /api/eras/{id}
+
+Delete an era.
+
+---
+
+## User Endpoints
+
+### GET /api/profile
+
+Get current user's profile.
+
+**Response:**
+```json
+{
+  "user": {
+    "id": "string",
+    "name": "string",
+    "email": "string"
+  },
+  "profile": {
+    "id": "string",
+    "username": "string",
+    "displayName": "string",
+    "avatarUrl": "string",
+    "bio": "string",
+    "website": "string",
+    "locale": "string",
+    "defaultLanguage": "string"
+  }
+}
+```
+
+### PUT /api/profile
+
+Update profile.
+
+**Request Body:**
+```json
+{
+  "username": "string",
+  "displayName": "string",
+  "avatarUrl": "string",
+  "bio": "string",
+  "website": "string",
+  "locale": "string",
+  "defaultLanguage": "string"
+}
+```
+
+### GET /api/dashboard
+
+Get dashboard statistics.
+
+**Response:**
+```json
+{
+  "stats": {
+    "oasisBios": 5,
+    "abilities": 20,
+    "worlds": 3,
+    "models": 2,
+    "references": 15,
+    "dcosFiles": 8,
+    "eras": 4
+  },
+  "recentActivities": [
+    {
+      "id": "string",
+      "type": "create|update|delete",
+      "title": "string",
+      "slug": "string",
+      "timestamp": "datetime"
+    }
+  ]
+}
+```
