@@ -1,0 +1,32 @@
+<svg width="300" height="80" viewBox="0 0 300 80" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        .logo-symbol {
+            stroke: #000;
+            stroke-width: 3;
+            fill: none;
+            stroke-linecap: square;
+        }
+        .logo-dot {
+            fill: #000;
+        }
+        .logo-text {
+            font-family: 'Arial', 'Helvetica', sans-serif;
+            font-size: 36px;
+            font-weight: 700;
+            fill: #000;
+            letter-spacing: -0.5px;
+        }
+    </style>
+
+    <!-- 左括号 [ -->
+    <path d="M 20 20 L 20 60 M 20 20 L 35 20 M 20 60 L 35 60" class="logo-symbol" />
+
+    <!-- 右括号 ] -->
+    <path d="M 65 20 L 65 60 M 65 20 L 50 20 M 65 60 L 50 60" class="logo-symbol" />
+
+    <!-- 中心圆点 • -->
+    <circle cx="42.5" cy="40" r="5" class="logo-dot" />
+
+    <!-- 文字 OASISBIO -->
+    <text x="85" y="52" class="logo-text">OASISBIO</text>
+</svg>
