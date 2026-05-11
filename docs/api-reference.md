@@ -323,4 +323,39 @@ List abilities for an OasisBio.
 
 ### POST /api/oasisbios/{id}/abilities
 
-Create a
+Create a new ability.
+
+**Request Body:**
+```json
+{
+  "name": "string (required)",
+  "category": "string (required)",
+  "level": 1-5,
+  "description": "string",
+  "relatedWorldId": "string",
+  "relatedEraId": "string"
+}
+```
+
+### PUT /api/abilities/{id}
+
+Update an ability.
+
+**Request Body:** Same as POST, all fields optional.
+
+### DELETE /api/abilities/{id}
+
+Delete an ability.
+
+---
+
+## World Endpoints
+
+### GET /api/oasisbios/{id}/worlds
+
+List worlds for an OasisBio.
+
+**Response:**
+```json
+{
+  "data":
