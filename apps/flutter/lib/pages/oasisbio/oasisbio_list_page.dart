@@ -151,3 +151,150 @@ class _OasisBioListPageState extends State<OasisBioListPage> {
           return const Center(child: Text('No characters found'));
         }
         return GridView.builder(
+          padding: const EdgeInsets.all(16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: state.oasisbios.length,
+          itemBuilder: (context, index) {
+            return _buildOasisBioCard(state.oasisbios[index]);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildOasisBioCard(OasisBio oasisbio) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.pushNamed(context, '/oasisbio/detail',
+              arguments: oasisbio.id);
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                  color: const Color(0xFFE0E7FF),
+                ),
+                child: Center(
+                  child: Text(
+                    oasisbio.title.isNotEmpty ? oasisbio.title[0].toUpperCase() : '?',
+                    style: const TextStyle(
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF4F46E5),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    oasisbio.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  if (oasisbio.tagline != null)
+                    Text(
+                      oasisbio.tagline!,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Colors.grey,
+                          ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      _buildStatusBadge(oasisbio.status),
+                      const SizedBox(width: 8),
+                      _buildVisibilityBadge(oasisbio.visibility),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color bgColor;
+    Color textColor;
+    String label;
+
+    switch (status) {
+      case 'draft':
+        bgColor = Colors.grey[100]!;
+        textColor = Colors.grey;
+        label = 'Draft';
+        break;
+      case 'published':
+        bgColor = Colors.green[100]!;
+        textColor = Colors.green;
+        label = 'Published';
+        break;
+      default:
+        bgColor = Colors.orange[100]!;
+        textColor = Colors.orange;
+        label = status;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: bgColor,
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          color: textColor,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVisibilityBadge(Visibility visibility) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(8),
+        color: visibility == Visibility.public ? Colors.blue[100]! : Colors.grey[100]!,
+      ),
+      child: Text(
+        visibility == Visibility.public ? 'Public' : 'Private',
+        style: TextStyle(
+          fontSize: 10,
+          color: visibility == Visibility.public ? Colors.blue : Colors.grey,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+}
