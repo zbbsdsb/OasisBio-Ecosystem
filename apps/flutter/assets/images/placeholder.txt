@@ -1,0 +1,4 @@
+This directory contains image assets for the OasisBio Flutter app.
+- oasis_logo.svg (copied from original project)
+- oasisbio-logo-horizontal.svg (copied from original project)
+- logo_sample.png (copied from original project)

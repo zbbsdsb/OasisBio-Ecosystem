@@ -112,3 +112,245 @@ class _OasisBioCreatePageState extends State<OasisBioCreatePage> {
   Widget _buildTitleSection() {
     return Column(
       children: [
+        TextFormField(
+          controller: _titleController,
+          decoration: const InputDecoration(
+            labelText: 'Title *',
+            border: OutlineInputBorder(),
+          ),
+          validator: Validatorless.required('Title is required'),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _taglineController,
+          decoration: const InputDecoration(
+            labelText: 'Tagline',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        const SizedBox(height: 12),
+        TextFormField(
+          controller: _summaryController,
+          maxLines: 3,
+          decoration: const InputDecoration(
+            labelText: 'Summary',
+            border: OutlineInputBorder(),
+            alignLabelWithHint: true,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBasicInfoSection() {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Basic Settings',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            _buildIdentityModeSelector(),
+            const SizedBox(height: 16),
+            _buildStatusSelector(),
+            const SizedBox(height: 16),
+            _buildVisibilitySelector(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildIdentityModeSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Identity Mode'),
+        const SizedBox(height: 8),
+        Row(
+          children: IdentityMode.values.map((mode) {
+            return Expanded(
+              child: RadioListTile<IdentityMode>(
+                title: Text(_getIdentityModeLabel(mode)),
+                value: mode,
+                groupValue: _identityMode,
+                onChanged: (value) {
+                  setState(() => _identityMode = value!);
+                },
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatusSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Status'),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: RadioListTile<String>(
+                title: const Text('Draft'),
+                value: 'draft',
+                groupValue: _status,
+                onChanged: (value) {
+                  setState(() => _status = value!);
+                },
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              ),
+            ),
+            Expanded(
+              child: RadioListTile<String>(
+                title: const Text('Published'),
+                value: 'published',
+                groupValue: _status,
+                onChanged: (value) {
+                  setState(() => _status = value!);
+                },
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildVisibilitySelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text('Visibility'),
+        const SizedBox(height: 8),
+        Row(
+          children: Visibility.values.map((visibility) {
+            return Expanded(
+              child: RadioListTile<Visibility>(
+                title: Text(visibility == Visibility.public ? 'Public' : 'Private'),
+                value: visibility,
+                groupValue: _visibility,
+                onChanged: (value) {
+                  setState(() => _visibility = value!);
+                },
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDetailsSection() {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Character Details',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            const SizedBox(height: 16),
+            GridView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              children: [
+                TextFormField(
+                  controller: _genderController,
+                  decoration: const InputDecoration(
+                    labelText: 'Gender',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                TextFormField(
+                  controller: _pronounsController,
+                  decoration: const InputDecoration(
+                    labelText: 'Pronouns',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                TextFormField(
+                  controller: _speciesController,
+                  decoration: const InputDecoration(
+                    labelText: 'Species',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                TextFormField(
+                  controller: _originPlaceController,
+                  decoration: const InputDecoration(
+                    labelText: 'Origin Place',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                TextFormField(
+                  controller: _currentEraController,
+                  decoration: const InputDecoration(
+                    labelText: 'Current Era',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _descriptionController,
+              maxLines: 5,
+              decoration: const InputDecoration(
+                labelText: 'Description',
+                border: OutlineInputBorder(),
+                alignLabelWithHint: true,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getIdentityModeLabel(IdentityMode mode) {
+    switch (mode) {
+      case IdentityMode.real:
+        return 'Real';
+      case IdentityMode.fictional:
+        return 'Fictional';
+      case IdentityMode.hybrid:
+        return 'Hybrid';
+      case IdentityMode.future:
+        return 'Future';
+      case IdentityMode.alternate:
+        return 'Alternate';
+    }
+  }
+}
