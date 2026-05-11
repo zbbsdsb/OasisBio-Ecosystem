@@ -238,4 +238,54 @@ class _DashboardPageState extends State<DashboardPage> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
-      child: ListTile
+      child: ListTile(
+        leading: _buildAvatar(oasisbio),
+        title: Text(oasisbio.title),
+        subtitle: Text(oasisbio.tagline ?? oasisbio.status),
+        trailing: _buildVisibilityBadge(oasisbio.visibility),
+        onTap: () {
+          Navigator.pushNamed(context, '/oasisbio/detail',
+              arguments: oasisbio.id);
+        },
+      ),
+    );
+  }
+
+  Widget _buildAvatar(OasisBio oasisbio) {
+    return Container(
+      width: 48,
+      height: 48,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFFE0E7FF),
+      ),
+      child: Center(
+        child: Text(
+          oasisbio.title.isNotEmpty ? oasisbio.title[0].toUpperCase() : '?',
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF4F46E5),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVisibilityBadge(Visibility visibility) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: visibility == Visibility.public ? Colors.green[100] : Colors.grey[100],
+      ),
+      child: Text(
+        visibility == Visibility.public ? 'Public' : 'Private',
+        style: TextStyle(
+          fontSize: 12,
+          color: visibility == Visibility.public ? Colors.green : Colors.grey,
+        ),
+      ),
+    );
+  }
+}
