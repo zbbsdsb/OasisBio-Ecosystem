@@ -1,8 +1,16 @@
 # OasisBio Types Reference
 
+## Overview
+
+This document provides detailed TypeScript type definitions for the OasisBio ecosystem. All types are exported from the `@oasisbio/common-core` and related packages.
+
+---
+
 ## Core Models
 
 ### User
+
+Represents a user account in the system.
 
 ```typescript
 interface User {
@@ -17,6 +25,8 @@ interface User {
 ```
 
 ### Profile
+
+User profile information with additional metadata.
 
 ```typescript
 interface Profile {
@@ -35,6 +45,8 @@ interface Profile {
 ```
 
 ### OasisBio
+
+Core character identity model.
 
 ```typescript
 interface OasisBio {
@@ -73,12 +85,14 @@ interface OasisBio {
 
 ### Ability
 
+Character ability or skill.
+
 ```typescript
 interface Ability {
   id: string;
   oasisBioId: string;
   name: string;
-  category: string;
+  category: AbilityCategory;
   sourceType: 'custom' | 'official';
   level: number;
   description: string | null;
@@ -88,6 +102,8 @@ interface Ability {
 ```
 
 ### EraIdentity
+
+Time period or era associated with a character.
 
 ```typescript
 interface EraIdentity {
@@ -103,6 +119,8 @@ interface EraIdentity {
 ```
 
 ### DcosFile
+
+Long-form documentation file (DCOS = Digital Character Operating System).
 
 ```typescript
 interface DcosFile {
@@ -122,6 +140,8 @@ interface DcosFile {
 
 ### ReferenceItem
 
+External reference or source material.
+
 ```typescript
 interface ReferenceItem {
   id: string;
@@ -140,6 +160,8 @@ interface ReferenceItem {
 ```
 
 ### WorldItem
+
+Fictional world or setting.
 
 ```typescript
 interface WorldItem {
@@ -165,6 +187,8 @@ interface WorldItem {
 
 ### WorldDocument
 
+Document within a world.
+
 ```typescript
 interface WorldDocument {
   id: string;
@@ -181,6 +205,8 @@ interface WorldDocument {
 ```
 
 ### ModelItem
+
+3D model asset.
 
 ```typescript
 interface ModelItem {
@@ -205,17 +231,21 @@ interface ModelItem {
 
 ### IdentityMode
 
+Defines the type of identity for an OasisBio.
+
 ```typescript
 enum IdentityMode {
-  REAL = 'real',
-  FICTIONAL = 'fictional',
-  HYBRID = 'hybrid',
-  FUTURE = 'future',
-  ALTERNATE = 'alternate'
+  REAL = 'real',           // Real person/historical figure
+  FICTIONAL = 'fictional', // Completely fictional character
+  HYBRID = 'hybrid',       // Mix of real and fictional
+  FUTURE = 'future',       // Future/possible identity
+  ALTERNATE = 'alternate'  // Alternate universe/timeline
 }
 ```
 
 ### Visibility
+
+Controls visibility of resources.
 
 ```typescript
 enum Visibility {
@@ -225,6 +255,8 @@ enum Visibility {
 ```
 
 ### NuwaStatus
+
+Status for AI generation tasks.
 
 ```typescript
 enum NuwaStatus {
@@ -237,6 +269,8 @@ enum NuwaStatus {
 
 ### NuwaMode
 
+Mode for AI generation operations.
+
 ```typescript
 enum NuwaMode {
   SUGGEST = 'suggest',
@@ -246,6 +280,8 @@ enum NuwaMode {
 ```
 
 ### AbilityCategory
+
+Categories for character abilities.
 
 ```typescript
 enum AbilityCategory {
@@ -369,6 +405,8 @@ interface CreateWorldRequest {
 
 ### PaginatedResponse
 
+Generic paginated response wrapper.
+
 ```typescript
 interface PaginatedResponse<T> {
   data: T[];
@@ -379,6 +417,8 @@ interface PaginatedResponse<T> {
 ```
 
 ### OasisBioResponse
+
+Extended OasisBio with count information.
 
 ```typescript
 interface OasisBioResponse extends OasisBio {
@@ -395,12 +435,28 @@ interface OasisBioResponse extends OasisBio {
 
 ### ErrorResponse
 
+Standard error response format.
+
 ```typescript
 interface ErrorResponse {
   error: {
     code: string;
     message: string;
+    details?: Record<string, string>;
   };
+}
+```
+
+### AuthResponse
+
+Authentication response with token.
+
+```typescript
+interface AuthResponse {
+  ok: boolean;
+  token: string;
+  user: User;
+  expiresAt: Date;
 }
 ```
 
@@ -409,6 +465,8 @@ interface ErrorResponse {
 ## Auth Types
 
 ### AuthSession
+
+User session information.
 
 ```typescript
 interface AuthSession {
@@ -421,6 +479,8 @@ interface AuthSession {
 
 ### AuthState
 
+Authentication state management.
+
 ```typescript
 interface AuthState {
   status: 'loading' | 'authenticated' | 'unauthenticated';
@@ -431,6 +491,8 @@ interface AuthState {
 ```
 
 ### AuthCredentials
+
+Login credentials (passwordless).
 
 ```typescript
 interface AuthCredentials {
@@ -445,6 +507,8 @@ interface AuthCredentials {
 
 ### Result
 
+Functional error handling type.
+
 ```typescript
 interface Result<T, E = Error> {
   ok: boolean;
@@ -456,86 +520,39 @@ interface Result<T, E = Error> {
 }
 ```
 
+**Usage:**
+```typescript
+import { ok, err } from '@oasisbio/common-utils';
+
+function divide(a: number, b: number): Result<number, string> {
+  if (b === 0) {
+    return err('Cannot divide by zero');
+  }
+  return ok(a / b);
+}
+
+const result = divide(10, 2);
+if (result.ok) {
+  console.log(result.data); // 5
+} else {
+  console.error(result.error);
+}
+```
+
 ---
 
 ## Validation Rules
 
 ### ValidationRules
 
+Centralized validation constraints.
+
 ```typescript
 interface ValidationRules {
   USERNAME: {
-    MIN_LENGTH: number;
-    MAX_LENGTH: number;
-    PATTERN: RegExp;
+    MIN_LENGTH: number;      // 3
+    MAX_LENGTH: number;      // 20
+    PATTERN: RegExp;         // /^[a-z0-9_]+$/i
   };
   EMAIL: {
-    PATTERN: RegExp;
-  };
-  PASSWORD: {
-    MIN_LENGTH: number;
-    MAX_LENGTH: number;
-  };
-  OASISBIO_TITLE: {
-    MIN_LENGTH: number;
-    MAX_LENGTH: number;
-  };
-  SLUG: {
-    PATTERN: RegExp;
-  };
-  FILE_SIZE: {
-    AVATAR: number;
-    CHARACTER_COVER: number;
-    MODEL_PREVIEW: number;
-    MODEL: number;
-    EXPORT: number;
-  };
-}
-```
-
----
-
-## API Endpoints
-
-### API_ENDPOINTS
-
-```typescript
-const API_ENDPOINTS = {
-  AUTH: {
-    REGISTER: '/api/auth/register',
-    LOGIN: '/api/auth/login',
-    VERIFY: '/api/auth/verify',
-    LOGOUT: '/api/auth/logout'
-  },
-  OASISBIOS: {
-    LIST: '/api/oasisbios',
-    DETAIL: (id: string) => `/api/oasisbios/${id}`,
-    PUBLISH: (id: string) => `/api/oasisbios/${id}/publish`,
-    PUBLIC: '/api/oasisbios/public'
-  },
-  ABILITIES: {
-    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/abilities`,
-    DETAIL: (id: string) => `/api/abilities/${id}`
-  },
-  WORLDS: {
-    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/worlds`,
-    DETAIL: (id: string) => `/api/worlds/${id}`,
-    DOCUMENTS: (worldId: string) => `/api/worlds/${worldId}/documents`
-  },
-  DCOS: {
-    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/dcos`,
-    DETAIL: (id: string) => `/api/dcos/${id}`
-  },
-  REFERENCES: {
-    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/references`,
-    DETAIL: (id: string) => `/api/references/${id}`
-  },
-  ERAS: {
-    LIST: (oasisBioId: string) => `/api/oasisbios/${oasisBioId}/eras`,
-    DETAIL: (id: string) => `/api/eras/${id}`
-  },
-  PROFILE: '/api/profile',
-  DASHBOARD: '/api/dashboard',
-  SETTINGS: '/api/settings'
-};
-```
+    PATTERN: Reg

@@ -4,23 +4,37 @@
 
 All API endpoints are prefixed with `/api`.
 
+**Development:** `http://localhost:3000/api`  
+**Production:** `https://api.oasisbio.dev/api`
+
 ## Authentication
 
 All authenticated endpoints require a valid JWT token in the `Authorization` header:
 
-```
+```http
 Authorization: Bearer <token>
 ```
 
+### Authentication Flow
+
+1. **Request OTP**: POST `/api/auth/login` with email
+2. **Receive OTP**: Check email for one-time password
+3. **Verify OTP**: POST `/api/auth/verify` with email and OTP
+4. **Receive Token**: Server returns JWT token in response
+5. **Authenticate Requests**: Include token in Authorization header
+
 ## Error Format
 
-All error responses follow this format:
+All error responses follow this consistent format:
 
 ```json
 {
   "error": {
     "code": "ERROR_CODE",
-    "message": "Human-readable error message"
+    "message": "Human-readable error message",
+    "details": {
+      "field": "optional field-specific error"
+    }
   }
 }
 ```
@@ -34,6 +48,8 @@ All error responses follow this format:
 | `NOT_FOUND` | 404 | Resource not found |
 | `VALIDATION_ERROR` | 400 | Invalid input data |
 | `INTERNAL_ERROR` | 500 | Server error |
+| `RATE_LIMITED` | 429 | Too many requests |
+| `CONFLICT` | 409 | Resource conflict (e.g., duplicate username) |
 
 ---
 
@@ -46,28 +62,34 @@ Register a new user.
 **Request Body:**
 ```json
 {
-  "email": "string",
-  "username": "string",
-  "displayName": "string"
+  "email": "user@example.com",
+  "username": "unique_username",
+  "displayName": "Display Name"
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| email | string | Yes | Valid email address |
+| username | string | Yes | Unique username (3-20 chars, alphanumeric) |
+| displayName | string | Yes | User's display name |
 
 **Response:**
 ```json
 {
   "ok": true,
-  "message": "Registration successful"
+  "message": "Registration successful. Please check your email for verification."
 }
 ```
 
 ### POST /api/auth/login
 
-Login with email (sends OTP).
+Request OTP login (passwordless authentication).
 
 **Request Body:**
 ```json
 {
-  "email": "string"
+  "email": "user@example.com"
 }
 ```
 
@@ -81,13 +103,13 @@ Login with email (sends OTP).
 
 ### POST /api/auth/verify
 
-Verify OTP code.
+Verify OTP code and authenticate user.
 
 **Request Body:**
 ```json
 {
-  "email": "string",
-  "otp": "string"
+  "email": "user@example.com",
+  "otp": "123456"
 }
 ```
 
@@ -95,22 +117,25 @@ Verify OTP code.
 ```json
 {
   "ok": true,
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "user": {
-    "id": "string",
-    "email": "string",
-    "name": "string"
-  }
+    "id": "usr_123",
+    "email": "user@example.com",
+    "name": "Display Name"
+  },
+  "expiresAt": "2024-01-15T10:30:00Z"
 }
 ```
 
 ### POST /api/auth/logout
 
-Logout current user.
+Logout current user (invalidates session).
 
 **Response:**
 ```json
 {
-  "ok": true
+  "ok": true,
+  "message": "Successfully logged out"
 }
 ```
 
@@ -123,22 +148,28 @@ Logout current user.
 List all OasisBios for the authenticated user.
 
 **Query Parameters:**
-- `page`: number (default: 1)
-- `limit`: number (default: 20)
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| page | number | 1 | Page number |
+| limit | number | 20 | Items per page |
+| status | string | - | Filter by status (draft/active) |
+| visibility | string | - | Filter by visibility (private/public) |
+| search | string | - | Search by title/tagline |
 
 **Response:**
 ```json
 {
   "data": [
     {
-      "id": "string",
-      "title": "string",
-      "slug": "string",
-      "tagline": "string",
-      "identityMode": "real|fictional|hybrid|future|alternate",
-      "visibility": "private|public",
-      "createdAt": "datetime",
-      "updatedAt": "datetime"
+      "id": "bio_123",
+      "title": "My Character",
+      "slug": "my-character",
+      "tagline": "A legendary hero",
+      "identityMode": "fictional",
+      "visibility": "private",
+      "status": "active",
+      "createdAt": "2024-01-10T08:00:00Z",
+      "updatedAt": "2024-01-14T12:30:00Z"
     }
   ],
   "total": 100,
@@ -154,31 +185,48 @@ Create a new OasisBio.
 **Request Body:**
 ```json
 {
-  "title": "string (required)",
-  "tagline": "string",
-  "summary": "string",
-  "identityMode": "real|fictional|hybrid|future|alternate",
-  "birthDate": "datetime",
-  "gender": "string",
-  "pronouns": "string",
-  "originPlace": "string",
-  "currentEra": "string",
-  "species": "string",
-  "status": "draft|active",
-  "description": "string",
-  "coverImageUrl": "string"
+  "title": "My Character",
+  "tagline": "A brief description",
+  "summary": "A longer summary of the character",
+  "identityMode": "fictional",
+  "birthDate": "1990-01-15",
+  "gender": "male",
+  "pronouns": "he/him",
+  "originPlace": "Fantasy World",
+  "currentEra": "Modern",
+  "species": "Human",
+  "status": "draft",
+  "description": "Detailed description...",
+  "coverImageUrl": "https://example.com/cover.jpg"
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| title | string | Yes | Character title (3-200 chars) |
+| tagline | string | No | Short tagline (max 100 chars) |
+| summary | string | No | Summary text (max 500 chars) |
+| identityMode | string | No | real/fictional/hybrid/future/alternate |
+| birthDate | string | No | ISO date string |
+| gender | string | No | Gender identity |
+| pronouns | string | No | Preferred pronouns |
+| originPlace | string | No | Place of origin |
+| currentEra | string | No | Current era setting |
+| species | string | No | Species/Race |
+| status | string | No | draft/active (default: draft) |
+| description | string | No | Full description |
+| coverImageUrl | string | No | Cover image URL |
 
 **Response:**
 ```json
 {
-  "id": "string",
-  "title": "string",
-  "slug": "string",
+  "id": "bio_123",
+  "title": "My Character",
+  "slug": "my-character",
   "visibility": "private",
-  "createdAt": "datetime",
-  "updatedAt": "datetime"
+  "status": "draft",
+  "createdAt": "2024-01-15T08:00:00Z",
+  "updatedAt": "2024-01-15T08:00:00Z"
 }
 ```
 
@@ -189,26 +237,26 @@ Get a specific OasisBio by ID.
 **Response:**
 ```json
 {
-  "id": "string",
-  "title": "string",
-  "slug": "string",
-  "tagline": "string",
-  "summary": "string",
-  "identityMode": "string",
-  "birthDate": "datetime",
-  "gender": "string",
-  "pronouns": "string",
-  "originPlace": "string",
-  "currentEra": "string",
-  "species": "string",
-  "status": "string",
-  "description": "string",
-  "coverImageUrl": "string",
-  "visibility": "string",
+  "id": "bio_123",
+  "title": "My Character",
+  "slug": "my-character",
+  "tagline": "A legendary hero",
+  "summary": "Summary text",
+  "identityMode": "fictional",
+  "birthDate": "1990-01-15",
+  "gender": "male",
+  "pronouns": "he/him",
+  "originPlace": "Fantasy World",
+  "currentEra": "Modern",
+  "species": "Human",
+  "status": "active",
+  "description": "Detailed description...",
+  "coverImageUrl": "https://example.com/cover.jpg",
+  "visibility": "public",
   "featured": false,
-  "publishedAt": "datetime",
-  "createdAt": "datetime",
-  "updatedAt": "datetime",
+  "publishedAt": "2024-01-14T10:00:00Z",
+  "createdAt": "2024-01-10T08:00:00Z",
+  "updatedAt": "2024-01-14T12:30:00Z",
   "abilities": [...],
   "eras": [...],
   "dcosFiles": [...],
@@ -222,12 +270,12 @@ Get a specific OasisBio by ID.
 
 Update an existing OasisBio.
 
-**Request Body:** (any fields from the OasisBio model)
+**Request Body:** (any fields from the OasisBio model, all optional)
 ```json
 {
-  "title": "string",
-  "tagline": "string",
-  "visibility": "private|public"
+  "title": "Updated Title",
+  "tagline": "Updated tagline",
+  "visibility": "public"
 }
 ```
 
@@ -235,18 +283,19 @@ Update an existing OasisBio.
 
 ### DELETE /api/oasisbios/{id}
 
-Delete an OasisBio.
+Delete an OasisBio (requires ownership).
 
 **Response:**
 ```json
 {
-  "ok": true
+  "ok": true,
+  "message": "OasisBio deleted successfully"
 }
 ```
 
 ### POST /api/oasisbios/{id}/publish
 
-Publish an OasisBio.
+Publish an OasisBio (make it public).
 
 **Request Body:**
 ```json
@@ -259,20 +308,21 @@ Publish an OasisBio.
 ```json
 {
   "ok": true,
-  "slug": "string",
-  "publishedAt": "datetime",
+  "slug": "my-character",
+  "publishedAt": "2024-01-15T10:00:00Z",
   "visibility": "public"
 }
 ```
 
 ### DELETE /api/oasisbios/{id}/publish
 
-Unpublish an OasisBio.
+Unpublish an OasisBio (make it private).
 
 **Response:**
 ```json
 {
-  "ok": true
+  "ok": true,
+  "message": "OasisBio unpublished successfully"
 }
 ```
 
@@ -280,20 +330,30 @@ Unpublish an OasisBio.
 
 List public OasisBios (no authentication required).
 
+**Query Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| page | number | 1 | Page number |
+| limit | number | 20 | Items per page |
+| search | string | - | Search by title/tagline |
+
 **Response:**
 ```json
 {
   "data": [
     {
-      "id": "string",
-      "title": "string",
-      "slug": "string",
-      "tagline": "string",
-      "identityMode": "string",
-      "currentEra": "string",
-      "coverImageUrl": "string"
+      "id": "bio_123",
+      "title": "Public Character",
+      "slug": "public-character",
+      "tagline": "A public character",
+      "identityMode": "fictional",
+      "currentEra": "Modern",
+      "coverImageUrl": "https://example.com/cover.jpg"
     }
-  ]
+  ],
+  "total": 50,
+  "page": 1,
+  "limit": 20
 }
 ```
 
@@ -310,12 +370,14 @@ List abilities for an OasisBio.
 {
   "data": [
     {
-      "id": "string",
-      "name": "string",
-      "category": "string",
-      "level": 1,
-      "description": "string",
-      "sourceType": "custom|official"
+      "id": "abl_123",
+      "name": "Fireball",
+      "category": "magic",
+      "level": 3,
+      "description": "Throws a fireball at target",
+      "sourceType": "custom",
+      "relatedWorldId": "wrld_456",
+      "relatedEraId": "era_789"
     }
   ]
 }
@@ -328,14 +390,25 @@ Create a new ability.
 **Request Body:**
 ```json
 {
-  "name": "string (required)",
-  "category": "string (required)",
-  "level": 1-5,
-  "description": "string",
-  "relatedWorldId": "string",
-  "relatedEraId": "string"
+  "name": "Fireball",
+  "category": "magic",
+  "level": 3,
+  "description": "Throws a fireball at target",
+  "relatedWorldId": "wrld_456",
+  "relatedEraId": "era_789"
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | Ability name |
+| category | string | Yes | combat/magic/tech/social/knowledge/physical/creative/survival |
+| level | number | No | 1-5 (default: 1) |
+| description | string | No | Ability description |
+| relatedWorldId | string | No | Related world ID |
+| relatedEraId | string | No | Related era ID |
+
+**Response:** Created ability object.
 
 ### PUT /api/abilities/{id}
 
@@ -346,6 +419,13 @@ Update an ability.
 ### DELETE /api/abilities/{id}
 
 Delete an ability.
+
+**Response:**
+```json
+{
+  "ok": true
+}
+```
 
 ---
 
@@ -360,18 +440,18 @@ List worlds for an OasisBio.
 {
   "data": [
     {
-      "id": "string",
-      "name": "string",
-      "summary": "string",
-      "visibility": "private|public",
-      "timeSetting": "string",
-      "geography": "string",
-      "physicsRules": "string",
-      "socialStructure": "string",
-      "majorConflict": "string",
-      "timeline": "string",
-      "rules": "string",
-      "factions": "string"
+      "id": "wrld_123",
+      "name": "Fantasy World",
+      "summary": "A magical fantasy realm",
+      "visibility": "private",
+      "timeSetting": "Medieval",
+      "geography": "Mountains and forests",
+      "physicsRules": "Magic exists",
+      "socialStructure": "Feudal system",
+      "majorConflict": "Good vs Evil",
+      "timeline": "1000 years of history",
+      "rules": "Magic rules",
+      "factions": "Kingdoms, guilds, dark lords"
     }
   ]
 }
@@ -384,19 +464,33 @@ Create a new world.
 **Request Body:**
 ```json
 {
-  "name": "string (required)",
-  "summary": "string (required)",
-  "timeSetting": "string",
-  "geography": "string",
-  "physicsRules": "string",
-  "socialStructure": "string",
-  "majorConflict": "string",
-  "timeline": "string",
-  "rules": "string",
-  "factions": "string",
-  "visibility": "private|public"
+  "name": "Fantasy World",
+  "summary": "A magical fantasy realm",
+  "timeSetting": "Medieval",
+  "geography": "Mountains and forests",
+  "physicsRules": "Magic exists",
+  "socialStructure": "Feudal system",
+  "majorConflict": "Good vs Evil",
+  "timeline": "1000 years of history",
+  "rules": "Magic rules",
+  "factions": "Kingdoms, guilds, dark lords",
+  "visibility": "private"
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | World name |
+| summary | string | Yes | Brief summary |
+| timeSetting | string | No | Time period |
+| geography | string | No | Geographic description |
+| physicsRules | string | No | World physics rules |
+| socialStructure | string | No | Social structure |
+| majorConflict | string | No | Main conflict |
+| timeline | string | No | World timeline |
+| rules | string | No | World rules |
+| factions | string | No | Factions/groups |
+| visibility | string | No | private/public |
 
 ### GET /api/worlds/{id}
 
@@ -407,6 +501,8 @@ Get a world by ID.
 ### PUT /api/worlds/{id}
 
 Update a world.
+
+**Request Body:** Same as POST, all fields optional.
 
 ### DELETE /api/worlds/{id}
 
@@ -425,13 +521,16 @@ List DCOS files for an OasisBio.
 {
   "data": [
     {
-      "id": "string",
-      "title": "string",
-      "slug": "string",
-      "content": "string",
-      "folderPath": "string",
-      "status": "draft|published",
-      "version": 1
+      "id": "dcos_123",
+      "title": "Character Background",
+      "slug": "character-background",
+      "content": "Long-form content...",
+      "folderPath": "/documents",
+      "status": "published",
+      "version": 2,
+      "eraId": "era_456",
+      "createdAt": "2024-01-10T08:00:00Z",
+      "updatedAt": "2024-01-14T12:00:00Z"
     }
   ]
 }
@@ -444,14 +543,23 @@ Create a DCOS file.
 **Request Body:**
 ```json
 {
-  "title": "string (required)",
-  "content": "string (required)",
-  "slug": "string",
-  "folderPath": "string",
-  "status": "draft|published",
-  "eraId": "string"
+  "title": "Character Background",
+  "content": "Long-form content...",
+  "slug": "character-background",
+  "folderPath": "/documents",
+  "status": "draft",
+  "eraId": "era_456"
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| title | string | Yes | Document title |
+| content | string | Yes | Document content |
+| slug | string | No | URL-friendly identifier |
+| folderPath | string | No | Folder path |
+| status | string | No | draft/published |
+| eraId | string | No | Related era ID |
 
 ### PUT /api/dcos/{id}
 
@@ -476,17 +584,29 @@ Create a reference.
 **Request Body:**
 ```json
 {
-  "url": "string (required)",
-  "title": "string (required)",
-  "description": "string",
-  "sourceType": "article|video|website",
-  "provider": "string",
-  "coverImage": "string",
-  "eraId": "string",
-  "worldId": "string",
-  "tags": "string"
+  "url": "https://example.com/reference",
+  "title": "Reference Article",
+  "description": "Useful reference material",
+  "sourceType": "article",
+  "provider": "Example.com",
+  "coverImage": "https://example.com/cover.jpg",
+  "eraId": "era_456",
+  "worldId": "wrld_789",
+  "tags": "fantasy, magic, reference"
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| url | string | Yes | Reference URL |
+| title | string | Yes | Reference title |
+| description | string | No | Description |
+| sourceType | string | No | article/video/website |
+| provider | string | No | Content provider |
+| coverImage | string | No | Thumbnail URL |
+| eraId | string | No | Related era ID |
+| worldId | string | No | Related world ID |
+| tags | string | No | Comma-separated tags |
 
 ### PUT /api/references/{id}
 
@@ -511,13 +631,21 @@ Create an era.
 **Request Body:**
 ```json
 {
-  "name": "string (required)",
-  "eraType": "past|present|future|alternate|worldbound",
-  "description": "string",
-  "startYear": "number",
-  "endYear": "number"
+  "name": "Golden Age",
+  "eraType": "past",
+  "description": "A time of prosperity",
+  "startYear": -1000,
+  "endYear": -500
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | Era name |
+| eraType | string | Yes | past/present/future/alternate/worldbound |
+| description | string | No | Era description |
+| startYear | number | No | Start year (BC negative) |
+| endYear | number | No | End year |
 
 ### PUT /api/eras/{id}
 
@@ -539,19 +667,19 @@ Get current user's profile.
 ```json
 {
   "user": {
-    "id": "string",
-    "name": "string",
-    "email": "string"
+    "id": "usr_123",
+    "name": "Display Name",
+    "email": "user@example.com"
   },
   "profile": {
-    "id": "string",
-    "username": "string",
-    "displayName": "string",
-    "avatarUrl": "string",
-    "bio": "string",
-    "website": "string",
-    "locale": "string",
-    "defaultLanguage": "string"
+    "id": "prof_123",
+    "username": "unique_username",
+    "displayName": "Display Name",
+    "avatarUrl": "https://example.com/avatar.jpg",
+    "bio": "About me...",
+    "website": "https://example.com",
+    "locale": "zh-CN",
+    "defaultLanguage": "zh-CN"
   }
 }
 ```
@@ -563,13 +691,13 @@ Update profile.
 **Request Body:**
 ```json
 {
-  "username": "string",
-  "displayName": "string",
-  "avatarUrl": "string",
-  "bio": "string",
-  "website": "string",
-  "locale": "string",
-  "defaultLanguage": "string"
+  "username": "new_username",
+  "displayName": "New Display Name",
+  "avatarUrl": "https://example.com/new-avatar.jpg",
+  "bio": "Updated bio...",
+  "website": "https://new-website.com",
+  "locale": "en-US",
+  "defaultLanguage": "en-US"
 }
 ```
 
@@ -591,12 +719,42 @@ Get dashboard statistics.
   },
   "recentActivities": [
     {
-      "id": "string",
-      "type": "create|update|delete",
-      "title": "string",
-      "slug": "string",
-      "timestamp": "datetime"
+      "id": "act_123",
+      "type": "create",
+      "title": "My Character",
+      "slug": "my-character",
+      "timestamp": "2024-01-15T08:00:00Z"
     }
   ]
 }
 ```
+
+---
+
+## Rate Limits
+
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| /api/auth/login | 5 requests | 1 minute |
+| /api/auth/verify | 5 attempts | 1 minute |
+| All others | 100 requests | 1 minute |
+
+## Versioning
+
+The API is versioned via URL: `/api/v1/...`
+
+Current version: v1
+
+## Changelog
+
+### v1.0.0
+- Initial release
+- Auth endpoints (register, login, verify, logout)
+- OasisBio CRUD operations
+- Ability management
+- World management
+- DCOS file management
+- Reference management
+- Era management
+- Profile management
+- Dashboard statistics
