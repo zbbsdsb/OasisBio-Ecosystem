@@ -110,17 +110,3 @@ export interface OasisBioApiClient {
     getDashboard(): Promise<ApiResponse<any>>;
   };
 }
-
-export class ApiError extends Error {
-  public readonly code: string;
-  public readonly statusCode: number;
-  public readonly details?: any;
-
-  constructor(error: ApiError) {
-    super(error.message);
-    this.name = 'ApiError';
-    this.code = error.code;
-    this.statusCode = 500;
-    this.details = error.details;
-  }
-}

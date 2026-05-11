@@ -163,4 +163,68 @@ import {
 
 // Example: Validate create request
 const validation = validateCreateOasisBio({
-  title: '
+  title: 'My Character',
+  slug: 'my_character',
+  identityMode: IdentityMode.REAL
+});
+
+if (!validation.valid) {
+  console.error(validation.errors);
+}
+```
+
+## Project Structure
+
+```
+packages/
+├── common-core/
+│   ├── src/
+│   │   ├── models/
+│   │   ├── enums/
+│   │   ├── constants/
+│   │   ├── types/
+│   │   └── index.ts
+│   ├── package.json
+│   └── tsconfig.json
+├── common-utils/
+│   ├── src/
+│   │   ├── string.ts
+│   │   ├── date.ts
+│   │   ├── url.ts
+│   │   ├── validation.ts
+│   │   ├── result.ts
+│   │   ├── logger.ts
+│   │   ├── crypto.ts
+│   │   └── index.ts
+│   ├── package.json
+│   └── tsconfig.json
+├── common-auth/
+│   ├── src/
+│   │   ├── types.ts
+│   │   ├── errors.ts
+│   │   ├── constants.ts
+│   │   └── index.ts
+│   ├── package.json
+│   └── tsconfig.json
+├── common-api/
+│   ├── src/
+│   │   ├── endpoints.ts
+│   │   ├── client.ts
+│   │   ├── types.ts
+│   │   └── index.ts
+│   ├── package.json
+│   └── tsconfig.json
+└── common-validators/
+    ├── src/
+    │   ├── oasisbio-validators.ts
+    │   ├── profile-validators.ts
+    │   ├── auth-validators.ts
+    │   ├── file-validators.ts
+    │   └── index.ts
+    ├── package.json
+    └── tsconfig.json
+```
+
+## License
+
+MIT

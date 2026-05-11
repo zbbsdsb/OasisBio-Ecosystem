@@ -14,14 +14,8 @@ export function validateCreateOasisBio(request: CreateOasisBioRequest): Validati
 
   if (!validateRequired(request.title)) {
     addValidationError(result, 'title', 'Title is required');
-  } else if (!validateLength(request.title, VALIDATION_RULES.TITLE.MIN_LENGTH, VALIDATION_RULES.TITLE.MAX_LENGTH)) {
-    addValidationError(result, 'title', `Title must be between ${VALIDATION_RULES.TITLE.MIN_LENGTH} and ${VALIDATION_RULES.TITLE.MAX_LENGTH} characters`);
-  }
-
-  if (!validateRequired(request.slug)) {
-    addValidationError(result, 'slug', 'Slug is required');
-  } else if (!validateSlugFormat(request.slug)) {
-    addValidationError(result, 'slug', 'Slug must be lowercase alphanumeric with underscores, 3-100 characters');
+  } else if (!validateLength(request.title, VALIDATION_RULES.OASISBIO_TITLE.MIN_LENGTH, VALIDATION_RULES.OASISBIO_TITLE.MAX_LENGTH)) {
+    addValidationError(result, 'title', `Title must be between ${VALIDATION_RULES.OASISBIO_TITLE.MIN_LENGTH} and ${VALIDATION_RULES.OASISBIO_TITLE.MAX_LENGTH} characters`);
   }
 
   if (!validateRequired(request.identityMode)) {
@@ -34,12 +28,8 @@ export function validateCreateOasisBio(request: CreateOasisBioRequest): Validati
 export function validateUpdateOasisBio(request: UpdateOasisBioRequest): ValidationResult {
   const result = createValidationResult();
 
-  if (request.title !== undefined && !validateLength(request.title, VALIDATION_RULES.TITLE.MIN_LENGTH, VALIDATION_RULES.TITLE.MAX_LENGTH)) {
-    addValidationError(result, 'title', `Title must be between ${VALIDATION_RULES.TITLE.MIN_LENGTH} and ${VALIDATION_RULES.TITLE.MAX_LENGTH} characters`);
-  }
-
-  if (request.slug !== undefined && !validateSlugFormat(request.slug)) {
-    addValidationError(result, 'slug', 'Slug must be lowercase alphanumeric with underscores, 3-100 characters');
+  if (request.title !== undefined && !validateLength(request.title, VALIDATION_RULES.OASISBIO_TITLE.MIN_LENGTH, VALIDATION_RULES.OASISBIO_TITLE.MAX_LENGTH)) {
+    addValidationError(result, 'title', `Title must be between ${VALIDATION_RULES.OASISBIO_TITLE.MIN_LENGTH} and ${VALIDATION_RULES.OASISBIO_TITLE.MAX_LENGTH} characters`);
   }
 
   return result;

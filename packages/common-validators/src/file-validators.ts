@@ -1,7 +1,6 @@
 import { VALIDATION_RULES } from '@oasisbio/common-core';
 import {
   validateRequired,
-  validateLength,
   createValidationResult,
   addValidationError,
   type ValidationResult
@@ -17,7 +16,7 @@ export function validateFile(
   options: FileValidationOptions = {}
 ): ValidationResult {
   const result = createValidationResult();
-  const { maxSize = VALIDATION_RULES.MAX_FILE_SIZE, allowedTypes } = options;
+  const { maxSize = VALIDATION_RULES.FILE_SIZE.MODEL, allowedTypes } = options;
 
   if (!validateRequired(file)) {
     addValidationError(result, 'file', 'File is required');
@@ -43,14 +42,14 @@ export function validateFile(
 
 export function validateImageFile(file: { size: number; type: string; name?: string }): ValidationResult {
   return validateFile(file, {
-    maxSize: VALIDATION_RULES.MAX_IMAGE_SIZE,
+    maxSize: VALIDATION_RULES.FILE_SIZE.CHARACTER_COVER,
     allowedTypes: ['image/jpeg', 'image/png', 'image/webp', 'jpg', 'png', 'webp']
   });
 }
 
 export function validateDcosFile(file: { size: number; type: string; name?: string }): ValidationResult {
   return validateFile(file, {
-    maxSize: VALIDATION_RULES.MAX_DOC_SIZE,
+    maxSize: VALIDATION_RULES.FILE_SIZE.EXPORT,
     allowedTypes: [
       'application/pdf',
       'text/plain',

@@ -11,10 +11,10 @@ export interface AuthSession {
 export interface AuthState {
   session: AuthSession | null;
   isLoading: boolean;
-  error: AuthError | null;
+  error: Error | null;
 }
 
-export interface OtpError {
+export interface OtpErrorResponse {
   code: string;
   message: string;
 }

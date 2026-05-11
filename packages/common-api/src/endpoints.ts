@@ -1,1 +1,1 @@
-export * from '@oasisbio/common-core/constants/api-endpoints';
+export { API_ENDPOINTS } from '@oasisbio/common-core';

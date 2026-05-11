@@ -187,5 +187,6 @@ export interface VerifyOtpRequest {
 
 export interface RegisterRequest {
   email: string;
+  username: string;
   displayName: string;
 }

@@ -4,6 +4,10 @@ export const VALIDATION_RULES = {
     MAX_LENGTH: 30,
     PATTERN: /^[a-z0-9_-]+$/i
   },
+  OTP_CODE: {
+    MIN_LENGTH: 6,
+    MAX_LENGTH: 6
+  },
   DISPLAY_NAME: {
     MIN_LENGTH: 1,
     MAX_LENGTH: 100
