@@ -190,3 +190,43 @@ export interface RegisterRequest {
   username: string;
   displayName: string;
 }
+
+export interface CreateAssistantSessionRequest {
+  agent?: 'deo' | 'dia';
+  title?: string;
+}
+
+export interface UpdateAssistantSessionRequest {
+  title?: string;
+}
+
+export interface SendChatMessageRequest {
+  sessionId?: string;
+  agent?: 'deo' | 'dia';
+  message: string;
+  context?: {
+    currentBioId?: string;
+    currentWorldId?: string;
+  };
+}
+
+export interface UpdateAssistantProfileRequest {
+  agent: 'deo' | 'dia';
+  systemPrompt?: string;
+  apiEndpoint?: string | null;
+  apiKey?: string | null;
+  model?: string;
+  enabled?: boolean;
+}
+
+export interface UpdateAssistantPermissionRequest {
+  level?: 'read' | 'write' | 'admin';
+  permissions?: {
+    canRead?: boolean;
+    canWrite?: boolean;
+    canDelete?: boolean;
+    canManageAssistant?: boolean;
+    canManageUsers?: boolean;
+    canExportData?: boolean;
+  };
+}

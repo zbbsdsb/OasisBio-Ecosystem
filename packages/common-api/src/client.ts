@@ -20,7 +20,12 @@ import type {
   PublishBioRequest,
   LoginWithOtpRequest,
   VerifyOtpRequest,
-  RegisterRequest
+  RegisterRequest,
+  CreateAssistantSessionRequest,
+  UpdateAssistantSessionRequest,
+  SendChatMessageRequest,
+  UpdateAssistantProfileRequest,
+  UpdateAssistantPermissionRequest
 } from '@oasisbio/common-core';
 import type {
   User,
@@ -32,7 +37,18 @@ import type {
   EraIdentity,
   WorldItem,
   WorldDocument,
-  ModelItem
+  ModelItem,
+  AssistantMessage
+} from '@oasisbio/common-core';
+import type {
+  AssistantSessionSummary,
+  AssistantSessionDetail,
+  CreateSessionResponse,
+  SessionListResponse,
+  MessageListResponse,
+  ChatResponse,
+  AssistantProfileResponse,
+  AssistantPermissionResponse
 } from '@oasisbio/common-core';
 
 export interface OasisBioApiClient {
@@ -108,5 +124,27 @@ export interface OasisBioApiClient {
 
   dashboard: {
     getDashboard(): Promise<ApiResponse<any>>;
+  };
+
+  assistants: {
+    sessions: {
+      list(): Promise<ApiResponse<SessionListResponse>>;
+      create(request: CreateAssistantSessionRequest): Promise<ApiResponse<CreateSessionResponse>>;
+      getById(id: string): Promise<ApiResponse<AssistantSessionDetail>>;
+      update(id: string, request: UpdateAssistantSessionRequest): Promise<ApiResponse<AssistantSessionDetail>>;
+      delete(id: string): Promise<ApiResponse<void>>;
+    };
+    chat(request: SendChatMessageRequest): Promise<ApiResponse<ChatResponse>>;
+    messages: {
+      list(sessionId: string): Promise<ApiResponse<MessageListResponse>>;
+    };
+    profiles: {
+      get(): Promise<ApiResponse<AssistantProfileResponse>>;
+      update(request: UpdateAssistantProfileRequest): Promise<ApiResponse<{ success: boolean }>>;
+    };
+    permissions: {
+      get(): Promise<ApiResponse<AssistantPermissionResponse>>;
+      update(request: UpdateAssistantPermissionRequest): Promise<ApiResponse<AssistantPermissionResponse>>;
+    };
   };
 }

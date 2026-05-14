@@ -1,0 +1,44 @@
+{
+  "name": "@oasisbio/desktop",
+  "version": "0.1.0",
+  "description": "OasisBio Desktop Client",
+  "main": "dist-electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && electron-builder",
+    "preview": "vite preview",
+    "lint": "eslint src",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": ["oasisbio", "desktop", "electron"],
+  "author": "OasisBio Team",
+  "license": "MIT",
+  "dependencies": {
+    "@oasisbio/common-api": "workspace:*",
+    "@oasisbio/common-auth": "workspace:*",
+    "@oasisbio/common-core": "workspace:*",
+    "@supabase/supabase-js": "^2.42.0",
+    "keytar": "^7.9.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "electron-store": "^8.2.0",
+    "react-router-dom": "^6.22.3",
+    "lucide-react": "^0.363.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.64",
+    "@types/react-dom": "^18.2.21",
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.18",
+    "electron": "^29.1.0",
+    "electron-builder": "^24.13.3",
+    "postcss": "^8.4.35",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.4.2",
+    "vite": "^5.1.6",
+    "vite-plugin-electron": "^0.28.4",
+    "vite-plugin-electron-renderer": "^0.14.5"
+  }
+}

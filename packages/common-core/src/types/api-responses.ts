@@ -1,4 +1,4 @@
-import type { OasisBio, Profile, User } from '../models';
+import type { OasisBio, Profile, User, AssistantMessage } from '../models';
 
 export interface ApiResponse<T> {
   data?: T;
@@ -89,4 +89,84 @@ export interface PaginatedResponse<T> {
   pageSize: number;
   hasNextPage: boolean;
   hasPrevPage: boolean;
+}
+
+export interface AssistantSessionSummary {
+  id: string;
+  agent: 'deo' | 'dia';
+  title: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  messageCount: number;
+}
+
+export interface AssistantSessionDetail {
+  id: string;
+  agent: 'deo' | 'dia';
+  title: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  messages: AssistantMessage[];
+}
+
+export interface CreateSessionResponse {
+  id: string;
+  agent: 'deo' | 'dia';
+  title: string | null;
+  createdAt: Date;
+}
+
+export interface SessionListResponse {
+  sessions: AssistantSessionSummary[];
+}
+
+export interface MessageListResponse {
+  messages: AssistantMessage[];
+}
+
+export interface ChatResponse {
+  sessionId: string;
+  agent: 'deo' | 'dia';
+  response: string;
+  routing: {
+    primary: 'deo' | 'dia';
+    secondary?: 'deo' | 'dia';
+    confidence: number;
+    reason: string;
+  };
+}
+
+export interface AssistantProfileResponse {
+  deo: {
+    systemPrompt: string;
+    apiEndpoint: string | null;
+    apiKey: string | null;
+    model: string;
+    enabled: boolean;
+    configured: boolean;
+  };
+  dia: {
+    systemPrompt: string;
+    apiEndpoint: string | null;
+    apiKey: string | null;
+    model: string;
+    enabled: boolean;
+    configured: boolean;
+  };
+}
+
+export interface AssistantPermissionResponse {
+  level: 'read' | 'write' | 'admin';
+  permissions: {
+    canRead: boolean;
+    canWrite: boolean;
+    canDelete: boolean;
+    canManageAssistant: boolean;
+    canManageUsers: boolean;
+    canExportData: boolean;
+  };
+  labels: {
+    [key: string]: string;
+  };
+  description: string;
 }

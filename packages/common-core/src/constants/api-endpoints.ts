@@ -80,5 +80,15 @@ export const API_ENDPOINTS = {
   },
   CSRF_TOKEN: {
     BASE: '/api/csrf-token'
+  },
+  ASSISTANTS: {
+    BASE: '/api/assistants',
+    SESSIONS: '/api/assistants/sessions',
+    SESSION_BY_ID: (id: string) => `/api/assistants/sessions/${id}`,
+    CHAT: '/api/assistants/chat',
+    MESSAGES: '/api/assistants/messages',
+    PROFILES: '/api/assistants/profiles',
+    PROFILE_BY_AGENT: (agent: 'deo' | 'dia') => `/api/assistants/profiles/${agent}`,
+    PERMISSIONS: '/api/assistants/permissions'
   }
 } as const;

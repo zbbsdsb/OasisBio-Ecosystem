@@ -36,5 +36,18 @@ export type {
   PublishBioRequest,
   LoginWithOtpRequest,
   VerifyOtpRequest,
-  RegisterRequest
+  RegisterRequest,
+  CreateAssistantSessionRequest,
+  UpdateAssistantSessionRequest,
+  SendChatMessageRequest,
+  UpdateAssistantProfileRequest,
+  UpdateAssistantPermissionRequest,
+  AssistantSessionSummary,
+  AssistantSessionDetail,
+  CreateSessionResponse,
+  SessionListResponse,
+  MessageListResponse,
+  ChatResponse,
+  AssistantProfileResponse,
+  AssistantPermissionResponse
 } from '@oasisbio/common-core';
