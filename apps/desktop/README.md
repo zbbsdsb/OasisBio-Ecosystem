@@ -1,8 +1,27 @@
 # OasisBio Desktop
 
-Cross-era digital identity system desktop client.
+Cross-era digital identity system desktop client built with Electron and React.
 
-## Features
+---
+
+## Table of Contents
+
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Quick Start](#-quick-start)
+- [Project Structure](#-project-structure)
+- [Routing](#-routing)
+- [AI Assistants](#-ai-assistants)
+- [World Builder 2.0](#-world-builder-20)
+- [OAuth Integration](#-oauth-integration)
+- [Testing](#-testing)
+- [Performance Optimization](#-performance-optimization)
+- [Error Handling](#-error-handling)
+- [Packaging](#-packaging)
+
+---
+
+## ✨ Features
 
 ### Core Features
 
@@ -29,22 +48,19 @@ Cross-era digital identity system desktop client.
   - Ability management page
   - Settings page
 
-- ✅ **Performance Optimization**
-  - Route lazy loading
-  - Component on-demand loading
-  - Smooth loading states
-
-### AI Assistants (New)
+### AI Assistants
 
 - ✅ **Deo - Technical Assistant**
   - Green dinosaur mascot
   - Expert in programming, system architecture, debugging
   - Clear and concise code examples
+  - Real-time streaming responses
 
 - ✅ **Dia - Creative Partner**
   - Pink dinosaur mascot
   - Creative writing, brainstorming, story ideation
   - Rich emotional and visual expression
+  - Context-aware suggestions
 
 - ✅ **Session Management**
   - Create new sessions with different agents
@@ -52,8 +68,9 @@ Cross-era digital identity system desktop client.
   - Delete sessions
   - Session history persistence with localStorage
   - Chat history auto-save
+  - Multi-session support
 
-### World Builder 2.0 (New)
+### World Builder 2.0
 
 Six modular world-building components:
 
@@ -87,125 +104,166 @@ Six modular world-building components:
   - Module-by-module breakdown
   - Visual progress indicators
 
-### OAuth Integration (New)
+### OAuth 2.0 Integration
 
 - ✅ **OAuth 2.0 Support**
   - Third-party application authorization
   - Secure token management
   - Application registration system
+  - Scope-based permissions
 
-## Tech Stack
+---
 
-- **Electron** - Cross-platform desktop application framework
-- **React 18** - UI framework
-- **TypeScript** - Type-safe JavaScript
-- **Vite** - Next-generation frontend build tool
-- **Tailwind CSS** - Utility-first CSS framework
-- **React Router** - Routing management
-- **Lucide React** - Icon library
+## 🔧 Tech Stack
 
-## Development Environment Requirements
+| Technology | Purpose |
+|------------|---------|
+| **Electron** | Cross-platform desktop application framework |
+| **React 18** | UI framework |
+| **TypeScript** | Type-safe JavaScript |
+| **Vite** | Next-generation frontend build tool |
+| **Tailwind CSS** | Utility-first CSS framework |
+| **React Router** | Routing management |
+| **Lucide React** | Icon library |
+| **Jest** | Testing framework |
+| **MSW** | API mocking for tests |
 
-- Node.js >= 20.0.0
-- pnpm >= 9.0.0
+---
 
-## Installation & Running
+## 🚀 Quick Start
 
-### 1. Install pnpm
+### Prerequisites
 
-If you haven't installed pnpm yet:
+- **Node.js** >= 20.0.0
+- **pnpm** >= 9.0.0
+
+### Installation
 
 ```bash
+# Install pnpm (if not installed)
 npm install -g pnpm
-```
 
-### 2. Install Dependencies
-
-Run in the project root directory:
-
-```bash
+# Clone and install dependencies
+git clone https://github.com/zbbsdsb/OasisBio-Ecosystem.git
+cd OasisBio-Ecosystem
 pnpm install
-```
 
-### 3. Build Shared Packages
-
-Build all shared packages in the project root:
-
-```bash
+# Build shared packages
 pnpm build
 ```
 
-Or build individual packages:
+### Development
 
 ```bash
-cd packages/common-core
-pnpm build
-
-cd ../common-api
-pnpm build
-
-cd ../common-auth
-pnpm build
-```
-
-### 4. Run in Development Mode
-
-Run in the apps/desktop directory:
-
-```bash
+# Navigate to desktop app
 cd apps/desktop
+
+# Run in development mode
 pnpm dev
 ```
 
-### 5. Build for Production
+### Production Build
 
 ```bash
+cd apps/desktop
 pnpm build
 ```
 
-This will build the application and generate distributable files in the `release/` directory.
+Output files in `release/`:
+- `OasisBio Desktop Setup x.x.x.exe` - NSIS installer
+- `OasisBio Desktop-x.x.x-win.zip` - Portable archive
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```
 apps/desktop/
 ├── electron/
 │   ├── main.ts          # Electron main process
-│   └── preload.ts       # Preload script
+│   └── preload.ts       # Preload script (context bridge)
 ├── src/
+│   ├── __tests__/       # Test files
+│   │   ├── integration/ # Integration tests
+│   │   ├── mocks/       # MSW handlers
+│   │   └── test-utils.tsx
 │   ├── components/      # Component library
-│   │   ├── ui/      # Base UI components
+│   │   ├── assistant/   # AI assistant components
+│   │   │   ├── AgentSelector.tsx
+│   │   │   ├── ChatInterface.tsx
+│   │   │   ├── MessageBubble.tsx
+│   │   │   ├── PermissionManager.tsx
+│   │   │   └── SettingsPanel.tsx
+│   │   ├── auth/        # Authentication components
+│   │   │   └── OAuthButtons.tsx
+│   │   ├── layout/      # Layout components
+│   │   │   ├── AppLayout.tsx
+│   │   │   ├── Header.tsx
+│   │   │   └── Sidebar.tsx
+│   │   ├── ui/          # Base UI components
 │   │   │   ├── Button.tsx
-│   │   │   ├── Input.tsx
 │   │   │   ├── Card.tsx
-│   │   │   └── Spinner.tsx
-│   │   └── layout/    # Layout components
-│   │       ├── AppLayout.tsx
-│   │       ├── Sidebar.tsx
-│   │       └── Header.tsx
-│   ├── pages/         # Page components
-│   │   ├── WelcomePage.tsx
-│   │   ├── LoginPage.tsx
-│   │   ├── VerifyPage.tsx
+│   │   │   ├── ErrorBoundary.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── OfflineIndicator.tsx
+│   │   │   ├── PerformanceMonitor.tsx
+│   │   │   ├── Spinner.tsx
+│   │   │   ├── Textarea.tsx
+│   │   │   └── Toast.tsx
+│   │   └── world/       # World builder components
+│   │       ├── steps/   # Wizard steps
+│   │       ├── CharacterSection.tsx
+│   │       ├── CreateWorldCard.tsx
+│   │       ├── ModuleSection.tsx
+│   │       ├── StepWizard.tsx
+│   │       ├── WizardProgress.tsx
+│   │       └── WorldCard.tsx
+│   ├── contexts/        # React contexts
+│   │   └── ThemeContext.tsx
+│   ├── hooks/           # Custom hooks
+│   │   ├── useAssistant.ts
+│   │   ├── useAssistantSessions.ts
+│   │   ├── useAuth.tsx
+│   │   ├── useCompletionScore.ts
+│   │   ├── useDataLoader.ts
+│   │   ├── useLogger.ts
+│   │   ├── usePerformance.ts
+│   │   └── useWorldBuilder.ts
+│   ├── pages/           # Page components
+│   │   ├── AbilityListPage.tsx
+│   │   ├── AssistantPage.tsx
+│   │   ├── AssistantSettingsPage.tsx
 │   │   ├── DashboardPage.tsx
-│   │   ├── IdentityListPage.tsx
+│   │   ├── DeveloperAppsPage.tsx
 │   │   ├── IdentityDetailPage.tsx
 │   │   ├── IdentityFormPage.tsx
-│   │   ├── WorldListPage.tsx
-│   │   ├── AbilityListPage.tsx
-│   │   └── SettingsPage.tsx
-│   ├── contexts/      # Contexts
-│   │   └── ThemeContext.tsx
-│   ├── hooks/         # Custom hooks
-│   │   ├── useAuth.tsx
-│   │   └── useAssistantSessions.ts
-│   ├── services/      # Service layer
+│   │   ├── IdentityListPage.tsx
+│   │   ├── LoginPage.tsx
+│   │   ├── OAuthDocsPage.tsx
+│   │   ├── SettingsPage.tsx
+│   │   ├── VerifyPage.tsx
+│   │   ├── WelcomePage.tsx
+│   │   ├── WorldBuilderPage.tsx
+│   │   ├── WorldDetailPage.tsx
+│   │   └── WorldListPage.tsx
+│   ├── services/        # Service layer
 │   │   ├── api.ts
-│   │   ├── auth.ts
 │   │   ├── assistantService.ts
-│   │   └── cache.ts
-│   ├── types/         # Type definitions
-│   │   └── assistant.ts
+│   │   ├── auth.ts
+│   │   ├── cache.ts
+│   │   ├── oauthService.ts
+│   │   └── offlineService.ts
+│   ├── types/           # Type definitions
+│   │   ├── assistant.ts
+│   │   ├── oauth.ts
+│   │   └── world-builder.ts
+│   ├── utils/           # Utility functions
+│   │   ├── devtools.ts
+│   │   ├── errors.ts
+│   │   ├── logger.ts
+│   │   ├── performance.ts
+│   │   ├── requestCancellation.ts
+│   │   └── requestDedup.ts
 │   ├── App.tsx          # Main app component
 │   ├── main.tsx         # React entry point
 │   └── index.css        # Global styles
@@ -215,20 +273,16 @@ apps/desktop/
 ├── tsconfig.json        # TypeScript configuration
 ├── tailwind.config.js   # Tailwind CSS configuration
 ├── postcss.config.js    # PostCSS configuration
-└── electron-builder.json # Electron build configuration
+├── electron-builder.json # Electron build configuration
+├── jest.config.js       # Jest configuration
+├── TESTING.md           # Testing guide
+├── PERFORMANCE.md       # Performance guide
+└── ERROR_HANDLING.md    # Error handling guide
 ```
 
-## Shared Package Integration
+---
 
-This project integrates the following OasisBio shared packages:
-
-- `@oasisbio/common-core` - Core types, enums, constants, and utilities
-- `@oasisbio/common-api` - API client
-- `@oasisbio/common-auth` - Authentication utilities and types
-
-These packages are linked via pnpm workspace and can be updated in real-time during development.
-
-## Routing
+## 🔀 Routing
 
 | Path | Page | Description |
 |------|------|-------------|
@@ -241,27 +295,34 @@ These packages are linked via pnpm workspace and can be updated in real-time dur
 | `/identities/:id` | IdentityDetailPage | Identity detail |
 | `/identities/:id/edit` | IdentityFormPage | Edit identity |
 | `/worlds` | WorldListPage | World list |
+| `/worlds/builder` | WorldBuilderPage | World builder |
+| `/worlds/:id` | WorldDetailPage | World detail |
 | `/abilities` | AbilityListPage | Ability list |
+| `/assistant` | AssistantPage | AI assistant |
+| `/assistant/settings` | AssistantSettingsPage | Assistant settings |
+| `/developer/apps` | DeveloperAppsPage | OAuth apps |
+| `/developer/docs` | OAuthDocsPage | OAuth docs |
 | `/settings` | SettingsPage | Settings page |
 
-## Available Scripts
+---
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server |
-| `pnpm build` | Build for production |
-| `pnpm lint` | Lint code |
-| `pnpm test` | Run tests |
+## 🤖 AI Assistants
 
-## Usage Examples
-
-### AI Assistant Usage
+### Usage
 
 ```typescript
 import { useAssistantSessions } from './hooks/useAssistantSessions';
 
 function ChatComponent() {
-  const { sessions, createSession, deleteSession, renameSession } = useAssistantSessions();
+  const { 
+    sessions, 
+    createSession, 
+    deleteSession, 
+    renameSession,
+    getSessionHistory,
+    saveSessionHistory,
+    clearSessionHistory
+  } = useAssistantSessions();
 
   const handleNewSession = async () => {
     const sessionId = await createSession('deo'); // or 'dia'
@@ -276,7 +337,25 @@ function ChatComponent() {
 }
 ```
 
-### World Builder 2.0 Usage
+### Agent Types
+
+| Agent | Description | Capabilities |
+|-------|-------------|--------------|
+| `deo` | Technical Assistant | Programming, debugging, architecture, code review |
+| `dia` | Creative Partner | Writing, brainstorming, story ideation, world-building |
+
+### Features
+
+- **Streaming responses**: Real-time message streaming
+- **Context persistence**: Chat history saved to localStorage
+- **Multi-session**: Multiple concurrent sessions
+- **Permission management**: Control agent capabilities
+
+---
+
+## 🌍 World Builder 2.0
+
+### Usage
 
 ```typescript
 import { calculateWorldCompletionScore, type WorldItem } from '@oasisbio/common-core';
@@ -290,92 +369,310 @@ function WorldCard({ world }: { world: Partial<WorldItem> }) {
       <div>
         <span>Core Identity: {breakdown.coreIdentity}%</span>
         <span>Time Structure: {breakdown.timeStructure}%</span>
-        {/* ... other modules */}
+        <span>Space Structure: {breakdown.spaceStructure}%</span>
+        <span>Society: {breakdown.society}%</span>
+        <span>Rules: {breakdown.rules}%</span>
+        <span>Content: {breakdown.content}%</span>
       </div>
     </div>
   );
 }
 ```
 
-### Chat History Persistence
+### Module Scoring
+
+| Module | Weight | Fields |
+|--------|--------|--------|
+| Core Identity | 25% | name, summary, majorConflict |
+| Time Structure | 15% | timeSetting, timeline |
+| Space Structure | 15% | geography, physicsRules |
+| Society | 15% | socialStructure, factions |
+| Rules | 15% | rules |
+| Content | 15% | characters, events |
+
+---
+
+## 🔐 OAuth Integration
+
+### Registering an Application
 
 ```typescript
-const { 
-  getSessionHistory, 
-  saveSessionHistory, 
-  clearSessionHistory 
-} = useAssistantSessions();
+import { oauthService } from './services/oauthService';
 
-// Load chat history
-const history = getSessionHistory(sessionId);
-
-// Save new messages
-saveSessionHistory(sessionId, [...history, newMessage]);
-
-// Clear chat history
-clearSessionHistory(sessionId);
+const app = await oauthService.registerApp({
+  name: 'My Application',
+  redirectUri: 'https://example.com/callback',
+  scopes: ['read:profile', 'read:oasisbios'],
+  description: 'Application description'
+});
 ```
 
-## Packaging
+### Available Scopes
 
-### Windows Packaging
+| Scope | Description |
+|-------|-------------|
+| `read:profile` | Read user profile |
+| `write:profile` | Update user profile |
+| `read:oasisbios` | Read user's OasisBios |
+| `write:oasisbios` | Create/update OasisBios |
+| `read:worlds` | Read world data |
+| `write:worlds` | Create/update worlds |
 
-Using electron-builder configured for Windows NSIS installer:
+---
+
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+# Run all tests
+pnpm test
+
+# Watch mode
+pnpm test:watch
+
+# Coverage report
+pnpm test:coverage
+```
+
+### Test Structure
+
+```
+src/__tests__/
+├── integration/
+│   ├── assistant.test.tsx    # AI assistant integration
+│   ├── auth.test.tsx         # Authentication flow
+│   ├── oauth.test.tsx        # OAuth flow
+│   └── world-builder.test.tsx # World builder flow
+├── mocks/
+│   ├── handlers.ts           # MSW handlers
+│   └── server.ts             # Mock server setup
+└── test-utils.tsx            # Test utilities
+```
+
+### Writing Tests
+
+```typescript
+import { render, screen, fireEvent } from '@testing-library/react';
+import { Button } from './Button';
+
+describe('Button', () => {
+  it('renders with text', () => {
+    render(<Button>Click Me</Button>);
+    expect(screen.getByText('Click Me')).toBeInTheDocument();
+  });
+
+  it('handles clicks', () => {
+    const handleClick = jest.fn();
+    render(<Button onClick={handleClick}>Click</Button>);
+    fireEvent.click(screen.getByText('Click'));
+    expect(handleClick).toHaveBeenCalled();
+  });
+});
+```
+
+### Coverage Targets
+
+| Type | Target |
+|------|--------|
+| Unit tests | 70%+ |
+| Integration tests | 50%+ |
+
+See [TESTING.md](./TESTING.md) for detailed guide.
+
+---
+
+## ⚡ Performance Optimization
+
+### Current Optimizations
+
+| Optimization | Implementation |
+|--------------|----------------|
+| Component rendering | `React.memo()`, `useMemo()`, `useCallback()` |
+| Data loading | Lazy loading, Suspense, LocalStorage caching |
+| Code splitting | Route-based, Component-level |
+| Request optimization | Deduplication, Cancellation |
+
+### Performance Monitoring
+
+```typescript
+import { usePerformance } from './hooks/usePerformance';
+
+function Component() {
+  const { startMeasure, endMeasure } = usePerformance();
+
+  useEffect(() => {
+    startMeasure('data-load');
+    loadData().then(() => endMeasure('data-load'));
+  }, []);
+}
+```
+
+### Bundle Analysis
+
+```bash
+pnpm build:analyze
+```
+
+### Performance Checklist
+
+- [x] Components use memo() when appropriate
+- [x] Expensive calculations use useMemo()
+- [x] Event handlers use useCallback()
+- [x] Large components are lazy-loaded
+- [x] API responses cached
+- [ ] Virtual scrolling for large lists (planned)
+- [ ] Web Workers for heavy computation (planned)
+
+See [PERFORMANCE.md](./PERFORMANCE.md) for detailed guide.
+
+---
+
+## ❌ Error Handling
+
+### Error Types
+
+```typescript
+export const ERROR_CODES = {
+  NETWORK_ERROR: 'NETWORK_ERROR',
+  UNAUTHORIZED: 'UNAUTHORIZED',
+  NOT_FOUND: 'NOT_FOUND',
+  VALIDATION_ERROR: 'VALIDATION_ERROR',
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
+  TIMEOUT: 'TIMEOUT',
+};
+```
+
+### Usage
+
+```typescript
+import { useToast } from './components/ui/Toast';
+import { createError, OasisBioError } from './utils/errors';
+
+function Component() {
+  const { showToast } = useToast();
+
+  const handleAction = async () => {
+    try {
+      await riskyOperation();
+      showToast('Success!', 'success');
+    } catch (error) {
+      if (error instanceof OasisBioError) {
+        showToast(error.message, 'error');
+      }
+    }
+  };
+}
+```
+
+### Retryable Operations
+
+```typescript
+import { createRetryHandler } from './utils/errors';
+
+const fetchData = createRetryHandler(
+  async () => api.getData(),
+  3,    // max retries
+  1000  // delay ms
+);
+```
+
+### Error Boundary
+
+```tsx
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
+
+function App() {
+  return (
+    <ErrorBoundary fallback={<ErrorFallback />}>
+      <Router />
+    </ErrorBoundary>
+  );
+}
+```
+
+See [ERROR_HANDLING.md](./ERROR_HANDLING.md) for detailed guide.
+
+---
+
+## 📦 Packaging
+
+### Windows
 
 ```bash
 pnpm build
 ```
 
-This will generate in the `release/` directory:
+Output in `release/`:
 - `OasisBio Desktop Setup x.x.x.exe` - NSIS installer
 - `OasisBio Desktop-x.x.x-win.zip` - Portable archive
 
-### Configuration Options
+### Configuration
 
-Customize in `electron-builder.json`:
-- Application icon
-- Installer options
-- File associations
-- And more
+Edit `electron-builder.json`:
 
-## Development Notes
+```json
+{
+  "appId": "com.oasisbio.desktop",
+  "productName": "OasisBio Desktop",
+  "win": {
+    "target": ["nsis", "zip"],
+    "icon": "assets/icon.ico"
+  }
+}
+```
 
-1. Ensure shared packages are rebuilt after modifications
-2. TypeScript is configured in strict mode for type safety
-3. Use Tailwind CSS for styling
-4. Use React Router for navigation
-5. Use lazy loading to optimize application performance
+---
 
-## Theme System
+## 🎨 Theme System
 
-The app supports dark and light themes:
-- Default dark mode
-- Theme toggle button in sidebar footer
-- Theme preference saved to localStorage
+- **Default**: Dark mode
+- **Toggle**: Sidebar footer button
+- **Persistence**: localStorage
+- **CSS Variables**: Tailwind CSS dark mode
 
-## Architecture Highlights
+---
 
-### Module System
+## 📚 Shared Package Integration
 
-World Builder 2.0 uses a modular architecture:
-- Each module is independent and self-contained
-- Modules can be expanded and replaced easily
-- Completion scores calculated per-module
+This project integrates OasisBio shared packages:
 
-### Session Management
+| Package | Usage |
+|---------|-------|
+| `@oasisbio/common-core` | Core types, enums, constants |
+| `@oasisbio/common-api` | API client |
+| `@oasisbio/common-auth` | Authentication utilities |
 
-- Automatic session persistence to localStorage
-- Offline-capable with cached sessions
-- Merge local and remote session data
+Packages are linked via pnpm workspace for real-time updates during development.
 
-### Error Handling
+---
 
-- All async operations wrapped in try-catch
-- Graceful degradation with cached data
-- User-friendly error messages
+## 🔧 Available Scripts
 
-### Performance
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start development server |
+| `pnpm build` | Build for production |
+| `pnpm lint` | Lint code |
+| `pnpm test` | Run tests |
+| `pnpm test:watch` | Watch mode tests |
+| `pnpm test:coverage` | Coverage report |
+| `pnpm build:analyze` | Analyze bundle size |
 
-- React hooks optimized with useMemo and useCallback
-- Route and component lazy loading
-- Efficient re-render prevention
+---
+
+## 📝 Development Notes
+
+1. **Shared packages**: Rebuild after modifications
+2. **TypeScript**: Strict mode enabled
+3. **Styling**: Tailwind CSS utility classes
+4. **Navigation**: React Router v6
+5. **Performance**: Lazy loading for optimization
+6. **Testing**: Jest + React Testing Library + MSW
+
+---
+
+<p align="center">
+  <strong>🏢 Oasis Company</strong><br>
+  <a href="https://github.com/zbbsdsb">GitHub Organization</a>
+</p>

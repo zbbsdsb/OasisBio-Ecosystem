@@ -26,6 +26,14 @@ module.exports = {
       lines: 70,
       statements: 70,
     },
+    performance: {
+      branches: 80,
+      functions: 80,
+      lines: 75,
+      statements: 75,
+    },
   },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
+  testTimeout: 30000,
+  verbose: true,
 };

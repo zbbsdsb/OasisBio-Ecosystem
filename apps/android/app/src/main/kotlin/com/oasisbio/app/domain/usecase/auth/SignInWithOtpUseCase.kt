@@ -6,7 +6,7 @@ import javax.inject.Inject
 class SignInWithOtpUseCase @Inject constructor(
     private val authRepository: AuthRepository
 ) {
-    suspend operator fun invoke(email: String) {
-        authRepository.signInWithOtp(email)
+    suspend operator fun invoke(email: String): Result<Unit> {
+        return authRepository.sendOtp(email)
     }
 }

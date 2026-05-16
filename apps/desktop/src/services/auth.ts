@@ -1,6 +1,7 @@
 import { createClient, SupabaseClient, User as SupabaseUser, Session as SupabaseSession } from '@supabase/supabase-js'
 import type { AuthSession, AuthCredentials } from '@oasisbio/common-auth'
 import type { User, Profile } from '@oasisbio/common-core'
+import { OasisBioError, ERROR_CODES } from '../utils/errors'
 
 const SERVICE_NAME = 'oasisbio-desktop'
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || process.env.VITE_SUPABASE_URL || ''
@@ -11,7 +12,9 @@ let supabaseClient: SupabaseClient | null = null
 export const getSupabaseClient = (): SupabaseClient => {
   if (!supabaseClient) {
     if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-      throw new Error('Missing Supabase configuration')
+      throw new OasisBioError('Missing Supabase configuration. Please check your environment variables.', {
+        code: ERROR_CODES.INTERNAL_ERROR
+      })
     }
     supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: {
@@ -56,47 +59,90 @@ const transformSession = (supabaseSession: SupabaseSession, profile?: Profile): 
 }
 
 export const sendOtp = async (email: string): Promise<void> => {
-  const client = getSupabaseClient()
-  const { error } = await client.auth.signInWithOtp({
-    email,
-    options: {
-      shouldCreateUser: true
-    }
-  })
+  try {
+    const client = getSupabaseClient()
+    const { error } = await client.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: true
+      }
+    })
 
-  if (error) {
-    throw new Error(error.message)
+    if (error) {
+      throw new OasisBioError(error.message, {
+        code: ERROR_CODES.VALIDATION_ERROR,
+        details: { supabaseError: error }
+      })
+    }
+  } catch (error) {
+    if (error instanceof OasisBioError) {
+      throw error
+    }
+    throw new OasisBioError(
+      'Failed to send OTP. Please check your network connection.',
+      { code: ERROR_CODES.NETWORK_ERROR, details: error }
+    )
   }
 }
 
 export const verifyOtp = async (email: string, token: string): Promise<AuthSession> => {
-  const client = getSupabaseClient()
-  const { data, error } = await client.auth.verifyOtp({
-    email,
-    token,
-    type: 'email'
-  })
+  try {
+    const client = getSupabaseClient()
+    const { data, error } = await client.auth.verifyOtp({
+      email,
+      token,
+      type: 'email'
+    })
 
-  if (error || !data.session) {
-    throw new Error(error?.message || 'Invalid OTP')
+    if (error) {
+      throw new OasisBioError(error.message, {
+        code: ERROR_CODES.VALIDATION_ERROR,
+        details: { supabaseError: error }
+      })
+    }
+
+    if (!data.session) {
+      throw new OasisBioError('Invalid OTP. Please try again.', {
+        code: ERROR_CODES.VALIDATION_ERROR
+      })
+    }
+
+    const session = transformSession(data.session)
+    await storeSession(session)
+    
+    return session
+  } catch (error) {
+    if (error instanceof OasisBioError) {
+      throw error
+    }
+    throw new OasisBioError(
+      'Failed to verify OTP. Please check your network connection.',
+      { code: ERROR_CODES.NETWORK_ERROR, details: error }
+    )
   }
-
-  const session = transformSession(data.session)
-  await storeSession(session)
-  
-  return session
 }
 
 export const signOut = async (): Promise<void> => {
-  const client = getSupabaseClient()
-  await client.auth.signOut()
-  await clearStoredSession()
+  try {
+    const client = getSupabaseClient()
+    await client.auth.signOut()
+    await clearStoredSession()
+  } catch (error) {
+    await clearStoredSession()
+    if (error instanceof OasisBioError) {
+      throw error
+    }
+    throw new OasisBioError(
+      'Failed to sign out. Please try again.',
+      { code: ERROR_CODES.INTERNAL_ERROR, details: error }
+    )
+  }
 }
 
 export const refreshSession = async (): Promise<AuthSession | null> => {
-  const client = getSupabaseClient()
-  
   try {
+    const client = getSupabaseClient()
+    
     const storedSession = await getStoredSession()
     if (!storedSession?.refreshToken) {
       return null
@@ -106,7 +152,15 @@ export const refreshSession = async (): Promise<AuthSession | null> => {
       refresh_token: storedSession.refreshToken
     })
 
-    if (error || !data.session) {
+    if (error) {
+      await clearStoredSession()
+      throw new OasisBioError('Session expired. Please log in again.', {
+        code: ERROR_CODES.UNAUTHORIZED,
+        details: { supabaseError: error }
+      })
+    }
+
+    if (!data.session) {
       await clearStoredSession()
       return null
     }
@@ -115,6 +169,9 @@ export const refreshSession = async (): Promise<AuthSession | null> => {
     await storeSession(newSession)
     return newSession
   } catch (error) {
+    if (error instanceof OasisBioError) {
+      throw error
+    }
     await clearStoredSession()
     return null
   }

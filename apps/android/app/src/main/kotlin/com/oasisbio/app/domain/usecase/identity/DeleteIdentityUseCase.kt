@@ -6,7 +6,7 @@ import javax.inject.Inject
 class DeleteIdentityUseCase @Inject constructor(
     private val identityRepository: IdentityRepository
 ) {
-    suspend operator fun invoke(id: String) {
-        identityRepository.deleteIdentity(id)
+    suspend operator fun invoke(id: String): Result<Unit> {
+        return identityRepository.deleteIdentity(id)
     }
 }

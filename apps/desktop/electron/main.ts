@@ -47,6 +47,8 @@ const store = new Store<{
 
 let mainWindow: BrowserWindow | null = null
 let tray: Tray | null = null
+let isAppReady = false
+let pendingActions: (() => void)[] = []
 
 const getWindowState = () => {
   return store.get('windowState')
@@ -72,14 +74,24 @@ const createWindow = () => {
     height: savedState.height,
     x: savedState.x,
     y: savedState.y,
+    show: false,
+    backgroundColor: '#0f172a',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: false,
+      contextIsolation: true,
+      sandbox: true,
+      webSecurity: true,
+      spellcheck: true
     },
   })
 
-  if (savedState.isMaximized) {
-    mainWindow.maximize()
-  }
+  mainWindow.once('ready-to-show', () => {
+    mainWindow?.show()
+    if (savedState.isMaximized) {
+      mainWindow?.maximize()
+    }
+  })
 
   if (process.env.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL)
@@ -401,17 +413,23 @@ const transformSession = (supabaseSession: any) => {
   }
 }
 
-app.whenReady().then(() => {
+const initializeApp = async () => {
   createWindow()
   createTray()
   createMenu()
   setupIpcHandlers()
+  
+  isAppReady = true
+  pendingActions.forEach(action => action())
+  pendingActions = []
+}
 
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) {
-      createWindow()
-    }
-  })
+app.whenReady().then(initializeApp)
+
+app.on('activate', () => {
+  if (BrowserWindow.getAllWindows().length === 0) {
+    createWindow()
+  }
 })
 
 app.on('window-all-closed', () => {

@@ -1,13 +1,23 @@
 # OasisBio API Reference
 
+## Overview
+
+The OasisBio API provides RESTful endpoints for managing digital identities, worlds, abilities, and AI assistant interactions.
+
 ## Base URL
 
 All API endpoints are prefixed with `/api`.
 
-**Development:** `http://localhost:3000/api`  
-**Production:** `https://api.oasisbio.dev/api`
+| Environment | Base URL |
+|-------------|----------|
+| Development | `http://localhost:3000/api` |
+| Production | `https://api.oasisbio.dev/api` |
+
+---
 
 ## Authentication
+
+### Overview
 
 All authenticated endpoints require a valid JWT token in the `Authorization` header:
 
@@ -17,13 +27,30 @@ Authorization: Bearer <token>
 
 ### Authentication Flow
 
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Request OTP    │────▶│  Receive OTP    │────▶│  Verify OTP     │
+│  POST /login    │     │  (via email)    │     │  POST /verify   │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                                         │
+                                                         ▼
+                                                ┌─────────────────┐
+                                                │  Receive JWT    │
+                                                │  Token + User   │
+                                                └─────────────────┘
+```
+
 1. **Request OTP**: POST `/api/auth/login` with email
 2. **Receive OTP**: Check email for one-time password
 3. **Verify OTP**: POST `/api/auth/verify` with email and OTP
 4. **Receive Token**: Server returns JWT token in response
 5. **Authenticate Requests**: Include token in Authorization header
 
-## Error Format
+---
+
+## Error Handling
+
+### Error Response Format
 
 All error responses follow this consistent format:
 
@@ -50,6 +77,31 @@ All error responses follow this consistent format:
 | `INTERNAL_ERROR` | 500 | Server error |
 | `RATE_LIMITED` | 429 | Too many requests |
 | `CONFLICT` | 409 | Resource conflict (e.g., duplicate username) |
+| `NETWORK_ERROR` | - | Network connectivity issue |
+| `TIMEOUT` | 408 | Request timeout |
+
+### Error Handling Best Practices
+
+```typescript
+import { createError, OasisBioError, ERROR_CODES } from './utils/errors';
+
+try {
+  const response = await api.getData();
+} catch (error) {
+  if (error instanceof OasisBioError) {
+    switch (error.code) {
+      case ERROR_CODES.UNAUTHORIZED:
+        // Redirect to login
+        break;
+      case ERROR_CODES.NETWORK_ERROR:
+        // Show offline message, retry
+        break;
+      default:
+        // Show generic error
+    }
+  }
+}
+```
 
 ---
 
@@ -138,6 +190,105 @@ Logout current user (invalidates session).
   "message": "Successfully logged out"
 }
 ```
+
+---
+
+## OAuth 2.0 Endpoints
+
+### GET /api/oauth/apps
+
+List registered OAuth applications for the current user.
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "app_123",
+      "name": "My Application",
+      "clientId": "client_xxx",
+      "redirectUri": "https://example.com/callback",
+      "scopes": ["read:profile", "read:oasisbios"],
+      "createdAt": "2024-01-10T08:00:00Z"
+    }
+  ]
+}
+```
+
+### POST /api/oauth/apps
+
+Register a new OAuth application.
+
+**Request Body:**
+```json
+{
+  "name": "My Application",
+  "redirectUri": "https://example.com/callback",
+  "scopes": ["read:profile", "read:oasisbios"],
+  "description": "Application description"
+}
+```
+
+**Response:**
+```json
+{
+  "id": "app_123",
+  "name": "My Application",
+  "clientId": "client_xxx",
+  "clientSecret": "secret_xxx",
+  "redirectUri": "https://example.com/callback",
+  "scopes": ["read:profile", "read:oasisbios"]
+}
+```
+
+### GET /api/oauth/authorize
+
+OAuth authorization endpoint (user consent page).
+
+**Query Parameters:**
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| client_id | Yes | OAuth client ID |
+| redirect_uri | Yes | Redirect URI |
+| response_type | Yes | Always "code" |
+| scope | Yes | Space-separated scopes |
+| state | No | CSRF state token |
+
+### POST /api/oauth/token
+
+Exchange authorization code for access token.
+
+**Request Body:**
+```json
+{
+  "grant_type": "authorization_code",
+  "code": "auth_code_xxx",
+  "client_id": "client_xxx",
+  "client_secret": "secret_xxx",
+  "redirect_uri": "https://example.com/callback"
+}
+```
+
+**Response:**
+```json
+{
+  "access_token": "access_xxx",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "refresh_xxx"
+}
+```
+
+### Available OAuth Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read:profile` | Read user profile |
+| `write:profile` | Update user profile |
+| `read:oasisbios` | Read user's OasisBios |
+| `write:oasisbios` | Create/update OasisBios |
+| `read:worlds` | Read world data |
+| `write:worlds` | Create/update worlds |
 
 ---
 
@@ -257,12 +408,12 @@ Get a specific OasisBio by ID.
   "publishedAt": "2024-01-14T10:00:00Z",
   "createdAt": "2024-01-10T08:00:00Z",
   "updatedAt": "2024-01-14T12:30:00Z",
-  "abilities": [...],
-  "eras": [...],
-  "dcosFiles": [...],
-  "references": [...],
-  "worlds": [...],
-  "models": [...]
+  "abilities": [],
+  "eras": [],
+  "dcosFiles": [],
+  "references": [],
+  "worlds": [],
+  "models": []
 }
 ```
 
@@ -359,6 +510,222 @@ List public OasisBios (no authentication required).
 
 ---
 
+## AI Assistant Endpoints
+
+### GET /api/assistant/sessions
+
+List assistant sessions for the current user.
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "sess_123",
+      "agentId": "deo",
+      "title": "Code Review Session",
+      "createdAt": "2024-01-10T08:00:00Z",
+      "updatedAt": "2024-01-14T12:30:00Z",
+      "messageCount": 15
+    }
+  ]
+}
+```
+
+### POST /api/assistant/sessions
+
+Create a new assistant session.
+
+**Request Body:**
+```json
+{
+  "agentId": "deo",
+  "title": "New Session"
+}
+```
+
+| agentId | Description |
+|---------|-------------|
+| `deo` | Technical Assistant (programming, architecture, debugging) |
+| `dia` | Creative Partner (writing, brainstorming, story ideation) |
+
+**Response:**
+```json
+{
+  "id": "sess_123",
+  "agentId": "deo",
+  "title": "New Session",
+  "createdAt": "2024-01-15T08:00:00Z"
+}
+```
+
+### GET /api/assistant/sessions/{id}/messages
+
+Get messages for a session.
+
+**Query Parameters:**
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| limit | number | 50 | Number of messages |
+| before | string | - | Message ID for pagination |
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "msg_123",
+      "role": "user",
+      "content": "Help me debug this code",
+      "createdAt": "2024-01-15T08:00:00Z"
+    },
+    {
+      "id": "msg_124",
+      "role": "assistant",
+      "content": "I'd be happy to help! Please share the code...",
+      "createdAt": "2024-01-15T08:01:00Z"
+    }
+  ]
+}
+```
+
+### POST /api/assistant/sessions/{id}/messages
+
+Send a message to the assistant.
+
+**Request Body:**
+```json
+{
+  "content": "Help me debug this code",
+  "attachments": []
+}
+```
+
+**Response (Streaming):**
+```
+data: {"type": "text", "content": "I'd be happy"}
+data: {"type": "text", "content": " to help!"}
+data: {"type": "done", "messageId": "msg_124"}
+```
+
+### PUT /api/assistant/sessions/{id}
+
+Update session (rename).
+
+**Request Body:**
+```json
+{
+  "title": "Updated Session Title"
+}
+```
+
+### DELETE /api/assistant/sessions/{id}
+
+Delete a session and all its messages.
+
+---
+
+## World Endpoints
+
+### GET /api/oasisbios/{id}/worlds
+
+List worlds for an OasisBio.
+
+**Response:**
+```json
+{
+  "data": [
+    {
+      "id": "wrld_123",
+      "name": "Fantasy World",
+      "summary": "A magical fantasy realm",
+      "visibility": "private",
+      "timeSetting": "Medieval",
+      "geography": "Mountains and forests",
+      "physicsRules": "Magic exists",
+      "socialStructure": "Feudal system",
+      "majorConflict": "Good vs Evil",
+      "timeline": "1000 years of history",
+      "rules": "Magic rules",
+      "factions": "Kingdoms, guilds, dark lords",
+      "completionScore": 75
+    }
+  ]
+}
+```
+
+### POST /api/oasisbios/{id}/worlds
+
+Create a new world.
+
+**Request Body:**
+```json
+{
+  "name": "Fantasy World",
+  "summary": "A magical fantasy realm",
+  "timeSetting": "Medieval",
+  "geography": "Mountains and forests",
+  "physicsRules": "Magic exists",
+  "socialStructure": "Feudal system",
+  "majorConflict": "Good vs Evil",
+  "timeline": "1000 years of history",
+  "rules": "Magic rules",
+  "factions": "Kingdoms, guilds, dark lords",
+  "visibility": "private"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| name | string | Yes | World name |
+| summary | string | Yes | Brief summary |
+| timeSetting | string | No | Time period |
+| geography | string | No | Geographic description |
+| physicsRules | string | No | World physics rules |
+| socialStructure | string | No | Social structure |
+| majorConflict | string | No | Main conflict |
+| timeline | string | No | World timeline |
+| rules | string | No | World rules |
+| factions | string | No | Factions/groups |
+| visibility | string | No | private/public |
+
+### GET /api/worlds/{id}
+
+Get a world by ID.
+
+**Response:** Same as world object in list response.
+
+### PUT /api/worlds/{id}
+
+Update a world.
+
+**Request Body:** Same as POST, all fields optional.
+
+### DELETE /api/worlds/{id}
+
+Delete a world.
+
+### GET /api/worlds/{id}/completion
+
+Get world completion score breakdown.
+
+**Response:**
+```json
+{
+  "score": 75,
+  "breakdown": {
+    "coreIdentity": 100,
+    "timeStructure": 80,
+    "spaceStructure": 60,
+    "society": 70,
+    "rules": 50,
+    "content": 90
+  }
+}
+```
+
+---
+
 ## Ability Endpoints
 
 ### GET /api/oasisbios/{id}/abilities
@@ -426,87 +793,6 @@ Delete an ability.
   "ok": true
 }
 ```
-
----
-
-## World Endpoints
-
-### GET /api/oasisbios/{id}/worlds
-
-List worlds for an OasisBio.
-
-**Response:**
-```json
-{
-  "data": [
-    {
-      "id": "wrld_123",
-      "name": "Fantasy World",
-      "summary": "A magical fantasy realm",
-      "visibility": "private",
-      "timeSetting": "Medieval",
-      "geography": "Mountains and forests",
-      "physicsRules": "Magic exists",
-      "socialStructure": "Feudal system",
-      "majorConflict": "Good vs Evil",
-      "timeline": "1000 years of history",
-      "rules": "Magic rules",
-      "factions": "Kingdoms, guilds, dark lords"
-    }
-  ]
-}
-```
-
-### POST /api/oasisbios/{id}/worlds
-
-Create a new world.
-
-**Request Body:**
-```json
-{
-  "name": "Fantasy World",
-  "summary": "A magical fantasy realm",
-  "timeSetting": "Medieval",
-  "geography": "Mountains and forests",
-  "physicsRules": "Magic exists",
-  "socialStructure": "Feudal system",
-  "majorConflict": "Good vs Evil",
-  "timeline": "1000 years of history",
-  "rules": "Magic rules",
-  "factions": "Kingdoms, guilds, dark lords",
-  "visibility": "private"
-}
-```
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| name | string | Yes | World name |
-| summary | string | Yes | Brief summary |
-| timeSetting | string | No | Time period |
-| geography | string | No | Geographic description |
-| physicsRules | string | No | World physics rules |
-| socialStructure | string | No | Social structure |
-| majorConflict | string | No | Main conflict |
-| timeline | string | No | World timeline |
-| rules | string | No | World rules |
-| factions | string | No | Factions/groups |
-| visibility | string | No | private/public |
-
-### GET /api/worlds/{id}
-
-Get a world by ID.
-
-**Response:** Same as world object in list response.
-
-### PUT /api/worlds/{id}
-
-Update a world.
-
-**Request Body:** Same as POST, all fields optional.
-
-### DELETE /api/worlds/{id}
-
-Delete a world.
 
 ---
 
@@ -737,7 +1023,10 @@ Get dashboard statistics.
 |----------|-------|--------|
 | /api/auth/login | 5 requests | 1 minute |
 | /api/auth/verify | 5 attempts | 1 minute |
+| /api/assistant/* | 30 requests | 1 minute |
 | All others | 100 requests | 1 minute |
+
+---
 
 ## Versioning
 
@@ -745,7 +1034,15 @@ The API is versioned via URL: `/api/v1/...`
 
 Current version: v1
 
+---
+
 ## Changelog
+
+### v1.1.0 (Latest)
+- Added AI Assistant endpoints (sessions, messages)
+- Added OAuth 2.0 endpoints
+- Added world completion score endpoint
+- Improved error handling with detailed codes
 
 ### v1.0.0
 - Initial release

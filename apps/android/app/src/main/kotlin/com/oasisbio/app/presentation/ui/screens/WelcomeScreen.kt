@@ -1,11 +1,15 @@
 package com.oasisbio.app.presentation.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.oasisbio.app.R
@@ -24,10 +28,20 @@ fun WelcomeScreen(navController: NavHostController) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_app_logo),
+                contentDescription = stringResource(R.string.app_logo_description),
+                modifier = Modifier.size(160.dp),
+                contentScale = ContentScale.Fit
+            )
+
+            Spacer(modifier = Modifier.height(32.dp))
+
             Text(
                 text = stringResource(R.string.welcome_title),
                 style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onBackground
+                color = MaterialTheme.colorScheme.onBackground,
+                textAlign = TextAlign.Center
             )
             
             Spacer(modifier = Modifier.height(16.dp))
@@ -35,7 +49,8 @@ fun WelcomeScreen(navController: NavHostController) {
             Text(
                 text = stringResource(R.string.welcome_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center
             )
             
             Spacer(modifier = Modifier.height(64.dp))
@@ -45,17 +60,7 @@ fun WelcomeScreen(navController: NavHostController) {
                 modifier = Modifier.fillMaxWidth(),
                 shape = MaterialTheme.shapes.medium
             ) {
-                Text(text = stringResource(R.string.btn_login))
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
-            
-            OutlinedButton(
-                onClick = { navController.navigate(NavigationRoutes.REGISTER) },
-                modifier = Modifier.fillMaxWidth(),
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Text(text = stringResource(R.string.btn_register))
+                Text(text = stringResource(R.string.btn_start))
             }
         }
     }

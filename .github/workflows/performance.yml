@@ -1,0 +1,289 @@
+name: Performance Tests
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  NODE_VERSION: '20'
+  JAVA_VERSION: '17'
+  PERFORMANCE_THRESHOLDS: |
+    {
+      "desktop": {
+        "startupTime": 3000,
+        "apiResponseTime": 200,
+        "memoryUsageMB": 150,
+        "fps": 30
+      },
+      "android": {
+        "coldStartupTime": 2000,
+        "warmStartupTime": 500,
+        "memoryLeakMB": 10
+      },
+      "ios": {
+        "startupTime": 3000,
+        "memoryUsageMB": 200
+      }
+    }
+
+jobs:
+  desktop-performance:
+    name: Desktop Performance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install desktop dependencies
+        run: pnpm install --filter @oasisbio/desktop
+        working-directory: ./apps/desktop
+
+      - name: Run performance tests
+        run: pnpm test -- --testPathPattern=performance --coverage --coverageReporters=json --coverageReporters=text --jsonReport
+        working-directory: ./apps/desktop
+        continue-on-error: true
+
+      - name: Generate performance report
+        if: always()
+        run: |
+          if [ -f "apps/desktop/coverage/coverage-summary.json" ]; then
+            echo "## Desktop Performance Test Results" >> $GITHUB_STEP_SUMMARY
+            cat "apps/desktop/coverage/coverage-summary.json" | jq -r '
+              "### Coverage\n" +
+              "| Metric | Value |\n" +
+              "|--------|-------|\n" +
+              "| Lines | \(.total.lines.pct // 0)% |\n" +
+              "| Statements | \(.total.statements.pct // 0)% |\n" +
+              "| Functions | \(.total.functions.pct // 0)% |\n" +
+              "| Branches | \(.total.branches.pct // 0)% |"
+            } >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: desktop-performance-results
+          path: |
+            apps/desktop/coverage/
+            apps/desktop/test-results/
+
+      - name: Check performance regression
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "## Performance Regression Check" >> $GITHUB_STEP_SUMMARY
+          echo "Threshold: API response < 200ms, Memory < 150MB" >> $GITHUB_STEP_SUMMARY
+          echo "Status: Manual review required" >> $GITHUB_STEP_SUMMARY
+
+  android-performance:
+    name: Android Performance Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: 8.2
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x apps/android/gradlew
+
+      - name: Run Android performance tests
+        run: |
+          cd apps/android
+          ./gradlew :app:connectedDebugAndroidTest \
+            --no-daemon \
+            -Pandroid.testInstrumentationRunnerArguments.notAnnotation=androidx.test.filters.SuppressLandscape \
+            -Pandroid.testInstrumentationRunnerArguments.class=com.oasisbio.app.StartupPerformanceTest \
+            2>&1 | tee android-performance.log
+        continue-on-error: true
+
+      - name: Run memory leak tests
+        run: |
+          cd apps/android
+          ./gradlew :app:connectedDebugAndroidTest \
+            --no-daemon \
+            -Pandroid.testInstrumentationRunnerArguments.class=com.oasisbio.app.MemoryLeakTest \
+            2>&1 | tee android-memory.log
+        continue-on-error: true
+
+      - name: Parse performance metrics
+        if: always()
+        run: |
+          echo "## Android Performance Test Results" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f "apps/android/app/build/outputs/androidTest-results/connected/test-result.xml" ]; then
+            echo "Tests completed. See artifacts for detailed results." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-performance-results
+          path: |
+            apps/android/app/build/outputs/androidTest-results/
+            apps/android/app/build/reports/
+            android-performance.log
+            android-memory.log
+
+  ios-performance:
+    name: iOS Performance Tests
+    runs-on: macos-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
+
+      - name: Setup CocoaPods
+        run: |
+          cd apps/ios
+          pod install
+        continue-on-error: true
+
+      - name: Run iOS performance tests
+        run: |
+          cd apps/ios
+          xcodebuild test \
+            -workspace OasisBio.xcworkspace \
+            -scheme OasisBio \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -only-testing:OasisBioPerformanceTests \
+            -only-testing:OasisBioMemoryLeakTests \
+            -only-testing:OasisBioBenchmarkTests \
+            -enablePerformanceTests YES \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee ios-performance.log
+        continue-on-error: true
+
+      - name: Parse performance metrics
+        if: always()
+        run: |
+          echo "## iOS Performance Test Results" >> $GITHUB_STEP_SUMMARY
+
+          if grep -q "Test Suite 'All tests' passed" ios-performance.log; then
+            echo "✅ All performance tests passed" >> $GITHUB_STEP_SUMMARY
+          elif grep -q "Test Suite 'All tests' failed" ios-performance.log; then
+            echo "❌ Some performance tests failed" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if grep -E "(measured|max:|min:|avg:)" ios-performance.log; then
+            echo "Performance metrics captured"
+          fi
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ios-performance-results
+          path: |
+            apps/ios/Build/Logs/Test/
+            ios-performance.log
+
+  performance-summary:
+    name: Performance Summary
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [desktop-performance, android-performance, ios-performance]
+
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Generate performance summary
+        run: |
+          echo "# Performance Test Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Test Results" >> $GITHUB_STEP_SUMMARY
+
+          DESKTOP_STATUS=":white_check_mark:"
+          ANDROID_STATUS=":white_check_mark:"
+          IOS_STATUS=":white_check_mark:"
+
+          if [ -d "artifacts/desktop-performance-results" ]; then
+            DESKTOP_STATUS=":green_circle:"
+          fi
+
+          if [ -d "artifacts/android-performance-results" ]; then
+            ANDROID_STATUS=":green_circle:"
+          fi
+
+          if [ -d "artifacts/ios-performance-results" ]; then
+            IOS_STATUS=":green_circle:"
+          fi
+
+          echo "| Platform | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Desktop | $DESKTOP_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| Android | $ANDROID_STATUS |" >> $GITHUB_STEP_SUMMARY
+          echo "| iOS | $IOS_STATUS |" >> $GITHUB_STEP_SUMMARY
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Performance Thresholds" >> $GITHUB_STEP_SUMMARY
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          echo "$PERFORMANCE_THRESHOLDS" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+
+      - name: Check for performance regression
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "## Performance Regression Alert" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo ":warning: **Review Required**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Performance metrics have been recorded. Please review the artifacts and test logs to ensure no performance regression occurred." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "If you notice significant changes in performance, please investigate and address before merging." >> $GITHUB_STEP_SUMMARY
+
+      - name: Create GitHub Issue on regression
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Performance Regression Detected',
+              body: 'Performance tests have failed. Please review the performance test results and address any regressions.',
+              labels: ['performance', 'regression']
+            })

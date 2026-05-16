@@ -7,7 +7,7 @@ import javax.inject.Inject
 class UpdateIdentityUseCase @Inject constructor(
     private val identityRepository: IdentityRepository
 ) {
-    suspend operator fun invoke(id: String, identity: OasisBio): OasisBio {
+    suspend operator fun invoke(id: String, identity: OasisBio): Result<OasisBio> {
         return identityRepository.updateIdentity(id, identity)
     }
 }

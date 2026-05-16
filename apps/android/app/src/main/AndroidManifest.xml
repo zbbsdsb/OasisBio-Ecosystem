@@ -5,7 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:name=".di.AppComponent"
+        android:name=".OasisBioApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -14,16 +14,27 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.OasisBio"
-        tools:targetApi="31">
+        android:enableOnBackInvokedCallback="true"
+        android:hardwareAccelerated="true"
+        android:largeHeap="false"
+        android:preserveLegacyExternalStorage="false"
+        tools:targetApi="34">
+
         <activity
             android:name=".presentation.ui.screens.MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.OasisBio">
+            android:launchMode="singleTop"
+            android:screenOrientation="unspecified"
+            android:windowSoftInputMode="adjustResize"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
+            android:hardwareAccelerated="true"
+            android:theme="@style/Theme.OasisBio.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>

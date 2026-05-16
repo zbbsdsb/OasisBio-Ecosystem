@@ -2,15 +2,23 @@ package com.oasisbio.app.presentation.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.oasisbio.app.data.remote.ApiException
 import com.oasisbio.app.domain.model.OasisBio
-import com.oasisbio.app.domain.usecase.identity.*
-import dagger.hilt.android.lifecycle.ViewModelInject
+import com.oasisbio.app.domain.usecase.identity.DeleteIdentityUseCase
+import com.oasisbio.app.domain.usecase.identity.GetAllIdentitiesUseCase
+import com.oasisbio.app.domain.usecase.identity.GetIdentityByIdUseCase
+import com.oasisbio.app.domain.usecase.identity.CreateIdentityUseCase
+import com.oasisbio.app.domain.usecase.identity.UpdateIdentityUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
+import javax.inject.Inject
 
-class IdentityViewModel @ViewModelInject constructor(
+@HiltViewModel
+class IdentityViewModel @Inject constructor(
     private val getAllIdentitiesUseCase: GetAllIdentitiesUseCase,
     private val getIdentityByIdUseCase: GetIdentityByIdUseCase,
     private val createIdentityUseCase: CreateIdentityUseCase,
@@ -18,124 +26,188 @@ class IdentityViewModel @ViewModelInject constructor(
     private val deleteIdentityUseCase: DeleteIdentityUseCase
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(IdentityState())
-    val state: StateFlow<IdentityState> = _state
+    private val _uiState = MutableStateFlow(IdentityUiState())
+    val uiState: StateFlow<IdentityUiState> = _uiState.asStateFlow()
 
     fun loadIdentities() {
-        _state.value = _state.value.copy(isLoading = true, error = null)
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
         viewModelScope.launch {
-            try {
-                val identities = getAllIdentitiesUseCase()
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    identities = identities
-                )
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to load identities")
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
-            }
+            getAllIdentitiesUseCase()
+                .onSuccess { identities ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        identities = identities
+                    )
+                    Timber.d("Loaded ${identities.size} identities")
+                }
+                .onFailure { exception ->
+                    Timber.e(exception, "Failed to load identities")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = getFriendlyErrorMessage(exception)
+                    )
+                }
         }
     }
 
-    fun loadIdentity(id: String) {
-        _state.value = _state.value.copy(isLoading = true, error = null)
+    fun loadIdentityById(id: String) {
+        _uiState.value = _uiState.value.copy(isLoading = true, error = null)
         viewModelScope.launch {
-            try {
-                val identity = getIdentityByIdUseCase(id)
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    selectedIdentity = identity
-                )
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to load identity")
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
-            }
+            getIdentityByIdUseCase(id)
+                .onSuccess { identity ->
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        selectedIdentity = identity
+                    )
+                    Timber.d("Loaded identity: $id")
+                }
+                .onFailure { exception ->
+                    Timber.e(exception, "Failed to load identity: $id")
+                    _uiState.value = _uiState.value.copy(
+                        isLoading = false,
+                        error = getFriendlyErrorMessage(exception)
+                    )
+                }
         }
     }
 
     fun createIdentity(identity: OasisBio) {
-        _state.value = _state.value.copy(isLoading = true, error = null)
+        _uiState.value = _uiState.value.copy(operationInProgress = true, error = null)
         viewModelScope.launch {
-            try {
-                val created = createIdentityUseCase(identity)
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    identities = _state.value.identities + created,
-                    operationSuccess = true
-                )
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to create identity")
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
-            }
+            createIdentityUseCase(identity)
+                .onSuccess { created ->
+                    _uiState.value = _uiState.value.copy(
+                        operationInProgress = false,
+                        identities = _uiState.value.identities + created,
+                        selectedIdentity = created,
+                        operationSuccess = true
+                    )
+                    Timber.d("Created identity: ${created.id}")
+                }
+                .onFailure { exception ->
+                    Timber.e(exception, "Failed to create identity")
+                    _uiState.value = _uiState.value.copy(
+                        operationInProgress = false,
+                        error = getFriendlyErrorMessage(exception)
+                    )
+                }
         }
     }
 
     fun updateIdentity(id: String, identity: OasisBio) {
-        _state.value = _state.value.copy(isLoading = true, error = null)
+        _uiState.value = _uiState.value.copy(operationInProgress = true, error = null)
         viewModelScope.launch {
-            try {
-                val updated = updateIdentityUseCase(id, identity)
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    identities = _state.value.identities.map {
-                        if (it.id == id) updated else it
-                    },
-                    selectedIdentity = updated,
-                    operationSuccess = true
-                )
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to update identity")
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
-            }
+            updateIdentityUseCase(id, identity)
+                .onSuccess { updated ->
+                    _uiState.value = _uiState.value.copy(
+                        operationInProgress = false,
+                        identities = _uiState.value.identities.map {
+                            if (it.id == id) updated else it
+                        },
+                        selectedIdentity = updated,
+                        operationSuccess = true
+                    )
+                    Timber.d("Updated identity: $id")
+                }
+                .onFailure { exception ->
+                    Timber.e(exception, "Failed to update identity: $id")
+                    _uiState.value = _uiState.value.copy(
+                        operationInProgress = false,
+                        error = getFriendlyErrorMessage(exception)
+                    )
+                }
         }
     }
 
     fun deleteIdentity(id: String) {
-        _state.value = _state.value.copy(isLoading = true, error = null)
+        _uiState.value = _uiState.value.copy(operationInProgress = true, error = null)
         viewModelScope.launch {
-            try {
-                deleteIdentityUseCase(id)
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    identities = _state.value.identities.filter { it.id != id },
-                    selectedIdentity = null,
-                    operationSuccess = true
-                )
-            } catch (e: Exception) {
-                Timber.e(e, "Failed to delete identity")
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    error = e.message
-                )
+            deleteIdentityUseCase(id)
+                .onSuccess {
+                    _uiState.value = _uiState.value.copy(
+                        operationInProgress = false,
+                        identities = _uiState.value.identities.filter { it.id != id },
+                        selectedIdentity = null,
+                        operationSuccess = true
+                    )
+                    Timber.d("Deleted identity: $id")
+                }
+                .onFailure { exception ->
+                    Timber.e(exception, "Failed to delete identity: $id")
+                    _uiState.value = _uiState.value.copy(
+                        operationInProgress = false,
+                        error = getFriendlyErrorMessage(exception)
+                    )
+                }
+        }
+    }
+
+    fun selectIdentity(identity: OasisBio?) {
+        _uiState.value = _uiState.value.copy(selectedIdentity = identity)
+        Timber.d("Selected identity: ${identity?.id ?: "none"}")
+    }
+
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null)
+    }
+
+    fun clearSuccess() {
+        _uiState.value = _uiState.value.copy(operationSuccess = false)
+    }
+
+    fun retryLastAction() {
+        val state = _uiState.value
+        when {
+            state.identities.isEmpty() && !state.isLoading -> {
+                loadIdentities()
+            }
+            state.selectedIdentity != null && !state.isLoading -> {
+                loadIdentityById(state.selectedIdentity.id)
             }
         }
     }
 
-    fun clearError() {
-        _state.value = _state.value.copy(error = null)
+    fun refresh() {
+        loadIdentities()
     }
 
-    fun clearSuccess() {
-        _state.value = _state.value.copy(operationSuccess = false)
+    private fun getFriendlyErrorMessage(exception: Exception): String {
+        return when (exception) {
+            is ApiException -> {
+                when (exception) {
+                    is ApiException.NetworkError -> "网络连接失败，请检查网络设置"
+                    is ApiException.Unauthorized -> "登录已过期，请重新登录"
+                    is ApiException.Forbidden -> "您没有权限执行此操作"
+                    is ApiException.NotFound -> "身份信息不存在"
+                    is ApiException.ServerError -> "服务器错误，请稍后重试"
+                    is ApiException.BadRequest -> exception.message ?: "请求参数错误"
+                    is ApiException.UnknownError -> exception.message ?: "操作失败，请稍后重试"
+                }
+            }
+            else -> {
+                when {
+                    exception.message?.contains("network", ignoreCase = true) == true ->
+                        "网络连接失败，请检查网络设置"
+                    exception.message?.contains("timeout", ignoreCase = true) == true ->
+                        "请求超时，请稍后重试"
+                    exception.message?.contains("not found", ignoreCase = true) == true ->
+                        "身份信息不存在"
+                    exception.message?.contains("already exists", ignoreCase = true) == true ->
+                        "该身份名称已存在"
+                    exception.message?.contains("rate", ignoreCase = true) == true ->
+                        "请求过于频繁，请稍后再试"
+                    else -> exception.message ?: "操作失败，请稍后重试"
+                }
+            }
+        }
     }
 }
 
-data class IdentityState(
-    val isLoading: Boolean = false,
-    val error: String? = null,
+data class IdentityUiState(
     val identities: List<OasisBio> = emptyList(),
     val selectedIdentity: OasisBio? = null,
+    val isLoading: Boolean = false,
+    val error: String? = null,
+    val operationInProgress: Boolean = false,
     val operationSuccess: Boolean = false
 )

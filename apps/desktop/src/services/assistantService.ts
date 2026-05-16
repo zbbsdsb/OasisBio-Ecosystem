@@ -12,12 +12,29 @@ import type {
   AssistantPermissions
 } from '../types/assistant';
 import { DEO_DEFAULT_PROMPT, DIA_DEFAULT_PROMPT, DEFAULT_PERMISSIONS } from '../types/assistant';
+import { OasisBioError, ERROR_CODES, isOasisBioError } from '../utils/errors';
 
 const ASSISTANT_API_BASE = '/api/assistants';
 
 export interface AssistantProfiles {
   deo: ProfileConfig;
   dia: ProfileConfig;
+}
+
+function handleApiError(error: unknown, operation: string): never {
+  if (isOasisBioError(error)) {
+    throw error;
+  }
+  if (error instanceof Error) {
+    throw new OasisBioError(`${operation}: ${error.message}`, {
+      code: ERROR_CODES.INTERNAL_ERROR,
+      details: error
+    });
+  }
+  throw new OasisBioError(`${operation} failed`, {
+    code: ERROR_CODES.INTERNAL_ERROR,
+    details: error
+  });
 }
 
 class AssistantService {
@@ -46,7 +63,10 @@ class AssistantService {
           configured: !!(diaResponse.data?.apiEndpoint && diaResponse.data?.apiKey)
         }
       };
-    } catch {
+    } catch (error) {
+      if (isOasisBioError(error) && error.code === ERROR_CODES.UNAUTHORIZED) {
+        throw error;
+      }
       return {
         deo: {
           systemPrompt: DEO_DEFAULT_PROMPT,
@@ -69,15 +89,27 @@ class AssistantService {
   }
 
   async updateProfile(agent: AgentType, data: Partial<ProfileConfig>): Promise<void> {
-    await apiClient.request(`${ASSISTANT_API_BASE}/profiles/${agent}`, 'PUT', data);
+    try {
+      await apiClient.request(`${ASSISTANT_API_BASE}/profiles/${agent}`, 'PUT', data);
+    } catch (error) {
+      handleApiError(error, 'Failed to update profile');
+    }
   }
 
   async sendMessage(request: ChatRequest): Promise<ChatResponse> {
     try {
       const response = await apiClient.request<ChatResponse>('POST', `${ASSISTANT_API_BASE}/chat`, request);
-      return response.data!;
+      if (!response.data) {
+        throw new OasisBioError('No response received from assistant', {
+          code: ERROR_CODES.INTERNAL_ERROR
+        });
+      }
+      return response.data;
     } catch (error) {
-      throw new Error(error instanceof Error ? error.message : 'Failed to send message');
+      if (isOasisBioError(error)) {
+        throw error;
+      }
+      handleApiError(error, 'Failed to send message');
     }
   }
 
@@ -85,7 +117,10 @@ class AssistantService {
     try {
       const response = await apiClient.request<AssistantSession[]>('GET', `${ASSISTANT_API_BASE}/sessions`);
       return response.data || [];
-    } catch {
+    } catch (error) {
+      if (isOasisBioError(error) && error.code === ERROR_CODES.UNAUTHORIZED) {
+        throw error;
+      }
       return [];
     }
   }
@@ -94,13 +129,23 @@ class AssistantService {
     try {
       const response = await apiClient.request<AssistantSession>('GET', `${ASSISTANT_API_BASE}/sessions/${sessionId}`);
       return response.data || null;
-    } catch {
+    } catch (error) {
+      if (isOasisBioError(error) && error.code === ERROR_CODES.NOT_FOUND) {
+        return null;
+      }
+      if (isOasisBioError(error) && error.code === ERROR_CODES.UNAUTHORIZED) {
+        throw error;
+      }
       return null;
     }
   }
 
   async deleteSession(sessionId: string): Promise<void> {
-    await apiClient.request('DELETE', `${ASSISTANT_API_BASE}/sessions/${sessionId}`);
+    try {
+      await apiClient.request('DELETE', `${ASSISTANT_API_BASE}/sessions/${sessionId}`);
+    } catch (error) {
+      handleApiError(error, 'Failed to delete session');
+    }
   }
 
   async getMessages(sessionId: string): Promise<{ id: string; role: 'user' | AgentType; content: string; createdAt: Date }[]> {
@@ -113,7 +158,10 @@ class AssistantService {
         ...msg,
         createdAt: new Date(msg.createdAt)
       }));
-    } catch {
+    } catch (error) {
+      if (isOasisBioError(error) && error.code === ERROR_CODES.UNAUTHORIZED) {
+        throw error;
+      }
       return [];
     }
   }
@@ -125,7 +173,10 @@ class AssistantService {
         level: response.data?.level || 'read',
         permissions: response.data?.permissions || DEFAULT_PERMISSIONS
       };
-    } catch {
+    } catch (error) {
+      if (isOasisBioError(error) && error.code === ERROR_CODES.UNAUTHORIZED) {
+        throw error;
+      }
       return {
         level: 'read',
         permissions: DEFAULT_PERMISSIONS
@@ -134,12 +185,28 @@ class AssistantService {
   }
 
   async updatePermissions(level: PermissionLevel, permissions: Partial<AssistantPermissions>): Promise<void> {
-    await apiClient.request('PUT', `${ASSISTANT_API_BASE}/permissions`, { level, permissions });
+    try {
+      await apiClient.request('PUT', `${ASSISTANT_API_BASE}/permissions`, { level, permissions });
+    } catch (error) {
+      handleApiError(error, 'Failed to update permissions');
+    }
   }
 
   async createNewSession(agent: AgentType): Promise<string> {
-    const response = await apiClient.request<{ sessionId: string }>('POST', `${ASSISTANT_API_BASE}/sessions`, { agent });
-    return response.data?.sessionId || '';
+    try {
+      const response = await apiClient.request<{ sessionId: string }>('POST', `${ASSISTANT_API_BASE}/sessions`, { agent });
+      if (!response.data?.sessionId) {
+        throw new OasisBioError('Failed to create session: No session ID returned', {
+          code: ERROR_CODES.INTERNAL_ERROR
+        });
+      }
+      return response.data.sessionId;
+    } catch (error) {
+      if (isOasisBioError(error)) {
+        throw error;
+      }
+      handleApiError(error, 'Failed to create new session');
+    }
   }
 }
 

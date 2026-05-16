@@ -7,11 +7,12 @@ interface Toast {
   message: string;
   type: ToastType;
   duration?: number;
+  onRetry?: () => void;
 }
 
 interface ToastContextType {
   toasts: Toast[];
-  showToast: (message: string, type?: ToastType, duration?: number) => void;
+  showToast: (message: string, type?: ToastType, duration?: number, onRetry?: () => void) => void;
   hideToast: (id: string) => void;
 }
 
@@ -32,13 +33,18 @@ interface ToastProviderProps {
 export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
+  const hideToast = useCallback((id: string) => {
+    setToasts((prev) => prev.filter((toast) => toast.id !== id));
+  }, []);
+
   const showToast = useCallback((
     message: string,
     type: ToastType = 'info',
-    duration = 5000
+    duration = 5000,
+    onRetry?: () => void
   ) => {
     const id = Date.now().toString();
-    const newToast: Toast = { id, message, type, duration };
+    const newToast: Toast = { id, message, type, duration, onRetry };
     setToasts((prev) => [...prev, newToast]);
 
     if (duration > 0) {
@@ -46,11 +52,7 @@ export const ToastProvider: React.FC<ToastProviderProps> = ({ children }) => {
         hideToast(id);
       }, duration);
     }
-  }, []);
-
-  const hideToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((toast) => toast.id !== id));
-  }, []);
+  }, [hideToast]);
 
   return (
     <ToastContext.Provider value={{ toasts, showToast, hideToast }}>
@@ -70,7 +72,7 @@ interface ToastItemProps {
 }
 
 const ToastItem: React.FC<ToastItemProps> = ({ toast, onHide }) => {
-  const { id, message, type } = toast;
+  const { id, message, type, onRetry } = toast;
 
   const typeStyles: Record<ToastType, string> = {
     success: 'bg-green-600 border-green-700',
@@ -79,13 +81,27 @@ const ToastItem: React.FC<ToastItemProps> = ({ toast, onHide }) => {
     info: 'bg-blue-600 border-blue-700',
   };
 
+  const handleRetry = () => {
+    onHide(id);
+    onRetry?.();
+  };
+
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg text-white max-w-sm`}
+      className={`flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg text-white max-w-sm ${typeStyles[type]}`}
       role="alert"
     >
       <ToastIcon type={type} />
       <p className="flex-1">{message}</p>
+      {onRetry && type === 'error' && (
+        <button
+          onClick={handleRetry}
+          className="text-white/80 hover:text-white transition-colors px-2 py-1 rounded hover:bg-white/10 text-sm font-medium"
+          aria-label="Retry"
+        >
+          Retry
+        </button>
+      )}
       <button
         onClick={() => onHide(id)}
         className="text-white/80 hover:text-white transition-colors"

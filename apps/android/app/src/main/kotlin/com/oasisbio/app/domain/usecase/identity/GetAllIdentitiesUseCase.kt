@@ -7,7 +7,7 @@ import javax.inject.Inject
 class GetAllIdentitiesUseCase @Inject constructor(
     private val identityRepository: IdentityRepository
 ) {
-    suspend operator fun invoke(): List<OasisBio> {
+    suspend operator fun invoke(): Result<List<OasisBio>> {
         return identityRepository.getAllIdentities()
     }
 }

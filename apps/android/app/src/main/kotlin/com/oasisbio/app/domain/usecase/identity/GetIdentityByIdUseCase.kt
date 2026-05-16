@@ -7,7 +7,7 @@ import javax.inject.Inject
 class GetIdentityByIdUseCase @Inject constructor(
     private val identityRepository: IdentityRepository
 ) {
-    suspend operator fun invoke(id: String): OasisBio {
+    suspend operator fun invoke(id: String): Result<OasisBio> {
         return identityRepository.getIdentityById(id)
     }
 }
