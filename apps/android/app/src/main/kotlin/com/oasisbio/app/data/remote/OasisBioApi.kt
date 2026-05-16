@@ -2,6 +2,8 @@ package com.oasisbio.app.data.remote
 
 import com.oasisbio.app.domain.model.OasisBio
 import com.oasisbio.app.domain.model.UserProfile
+import com.oasisbio.app.presentation.ui.screens.OAuthApp
+import com.oasisbio.app.presentation.ui.screens.OAuthAppRegistration
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -108,6 +110,24 @@ interface OasisBioApi {
 
     @DELETE("api/oauth/{provider}/unlink")
     suspend fun unlinkOAuthAccount(@Path("provider") provider: String): Response<Unit>
+
+    @GET("api/developer/apps")
+    suspend fun getOAuthApps(): Response<List<OAuthApp>>
+
+    @GET("api/developer/apps/{id}")
+    suspend fun getOAuthAppById(@Path("id") id: String): Response<OAuthApp>
+
+    @POST("api/developer/apps")
+    suspend fun createOAuthApp(@Body registration: OAuthAppRegistration): Response<OAuthApp>
+
+    @PUT("api/developer/apps/{id}")
+    suspend fun updateOAuthApp(
+        @Path("id") id: String,
+        @Body app: OAuthApp
+    ): Response<OAuthApp>
+
+    @DELETE("api/developer/apps/{id}")
+    suspend fun deleteOAuthApp(@Path("id") id: String): Response<Unit>
 }
 
 data class CreateIdentityRequest(

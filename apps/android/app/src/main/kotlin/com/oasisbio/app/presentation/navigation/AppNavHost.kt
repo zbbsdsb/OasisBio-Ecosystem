@@ -114,6 +114,9 @@ fun AppNavHost(navController: NavHostController) {
             composable(NavigationRoutes.ASSISTANT) {
                 ChatScreen(navController = navController)
             }
+            composable(NavigationRoutes.OAUTH_DOCS) {
+                OAuthDocsScreen(navController = navController)
+            }
         }
     }
 }

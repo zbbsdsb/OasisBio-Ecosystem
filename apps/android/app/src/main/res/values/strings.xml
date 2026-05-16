@@ -45,6 +45,11 @@
     <string name="btn_add">Add Identity</string>
     <string name="btn_cancel">Cancel</string>
     
+    <!-- Ability Screens -->
+    <string name="title_abilities">能力管理</string>
+    <string name="empty_abilities_title">还没有能力</string>
+    <string name="empty_abilities_description">创建你的第一个能力，开启超凡之旅</string>
+    
     <!-- Empty States -->
     <string name="empty_identities_title">No Identities Yet</string>
     <string name="empty_identities_description">Create your first identity to start your digital identity journey</string>

@@ -15,6 +15,7 @@ object NavigationRoutes {
     const val DASHBOARD = "dashboard"
     const val SETTINGS = "settings"
     const val ABILITIES = "abilities"
+    const val ABILITY_LIST = "ability_list"
     const val DEVELOPER_APPS = "developer_apps"
     const val OAUTH_DOCS = "oauth_docs"
     const val ASSISTANT = "assistant"
