@@ -2,7 +2,7 @@
   <h1>OasisBio Ecosystem</h1>
   <p><strong>Cross-era Digital Identity System - Shared utilities and types powering the Oasis Company creative AI ecosystem</strong></p>
 
-  ![Social Preview](social-preview.html)
+  ![Social Preview](social-preview.png)
 
   [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
   [![npm packages](https://img.shields.io/badge/npm_packages-7-green.svg)](https://www.npmjs.com/)
